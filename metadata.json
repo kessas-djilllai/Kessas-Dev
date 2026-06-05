@@ -1,0 +1,6 @@
+{
+  "name": "محفظة مطور (Developer Portfolio)",
+  "description": "موقع محفظة شخصية يعرض خدمات تطوير تطبيقات الأندرويد، مواقع React، و الواجهات الخلفية بأسعار رمزية.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
