@@ -5,6 +5,7 @@ import Skills from './components/Skills';
 import Pricing from './components/Pricing';
 import Portfolio from './components/Portfolio';
 import Contact from './components/Contact';
+import ThreeDWorld from './components/ThreeDWorld';
 import { LanguageProvider } from './context/LanguageContext';
 
 function AppContent() {
@@ -41,6 +42,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen relative font-sans selection:bg-blue-500/30">
+      <ThreeDWorld />
       <Navbar theme={theme} toggleTheme={toggleTheme} />
       
       <main>

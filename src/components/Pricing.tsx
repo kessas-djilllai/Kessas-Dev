@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 export default function Pricing() {
   const { t } = useLanguage();
   return (
-    <section className="py-32 relative overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors">
+    <section className="py-32 relative overflow-hidden bg-transparent transition-colors">
       {/* Decorative background blurs */}
       <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/20 dark:bg-blue-600/10 rounded-full blur-[100px] -z-10 pointer-events-none opacity-60" />
       <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/20 dark:bg-indigo-600/10 rounded-full blur-[100px] -z-10 pointer-events-none opacity-60" />
