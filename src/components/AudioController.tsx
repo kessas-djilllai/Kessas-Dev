@@ -19,12 +19,9 @@ export default function AudioController() {
     audio.preload = 'auto'; // Force browser to fetch the audio immediately
     audioRef.current = audio;
 
-    let isPlayPending = false;
-
     const attemptPlay = () => {
-      if (initialized.current || isPlayPending) return;
+      if (initialized.current) return;
 
-      isPlayPending = true;
       const playPromise = audio.play();
       
       if (playPromise !== undefined) {
@@ -32,19 +29,15 @@ export default function AudioController() {
           .then(() => {
             setIsPlaying(true);
             initialized.current = true;
-            isPlayPending = false;
             cleanupListeners(); // Remove listeners once successfully started
           })
           .catch(err => {
-            isPlayPending = false;
             if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
               // Expected browser block, wait for true user gesture
             } else {
               console.warn("Audio play error:", err);
             }
           });
-      } else {
-        isPlayPending = false;
       }
     };
 
@@ -73,7 +66,8 @@ export default function AudioController() {
     attemptPlay();
 
     // Attach interaction listeners to broadly capture user gestures for unlocking audio
-    const events = ['click', 'touchstart', 'touchend', 'mousedown', 'mouseup', 'pointerdown', 'pointerup', 'keydown', 'scroll', 'wheel'];
+    // We use gestures that unlock audio on iOS and Android
+    const events = ['click', 'touchstart', 'touchend', 'keydown'];
     const cleanupListeners = () => {
       events.forEach(evt => {
         window.removeEventListener(evt, attemptPlay, true);
