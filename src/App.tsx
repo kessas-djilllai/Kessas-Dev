@@ -42,9 +42,9 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen relative font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen relative font-sans selection:bg-blue-500/30 overflow-x-hidden">
       <ThreeDWorld />
-      <div className="relative z-10">
+      <div className="relative z-10 w-full">
         <Navbar theme={theme} toggleTheme={toggleTheme} />
         
         <main>
