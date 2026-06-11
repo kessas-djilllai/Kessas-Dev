@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { motion } from 'motion/react';
-import { ambientSynth } from '../utils/audioSynth';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function AudioController() {
@@ -11,34 +10,16 @@ export default function AudioController() {
 
   // States for embedded audio (music.m4a or music.mp3)
   const [customAudioUrl, setCustomAudioUrl] = useState<string | null>(null);
-  const [isUsingCustom, setIsUsingCustom] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const customAudioUrlRef = useRef<string | null>(null);
-  const audioCheckPromise = useRef<Promise<string | null> | null>(null);
-
-  // Helper fallback function to switch to generative music if custom file fails
-  const fallbackToSynth = () => {
-    setIsUsingCustom(false);
-    ambientSynth.start();
-    setIsPlaying(true);
-  };
 
   useEffect(() => {
     const audio = new Audio();
     audio.loop = true;
     audioRef.current = audio;
-    
-    let fallbackTriggered = false;
 
     const attemptPlay = () => {
       if (initialized.current) return;
-      
-      if (fallbackTriggered) {
-        ambientSynth.start();
-        setIsPlaying(true);
-        initialized.current = true;
-        return;
-      }
 
       const playPromise = audio.play();
       if (playPromise !== undefined) {
@@ -52,11 +33,7 @@ export default function AudioController() {
               // Expected browser block, wait for user gesture quietly
             } else {
               console.warn("Audio play error:", err);
-              if (!fallbackTriggered) {
-                fallbackTriggered = true;
-                fallbackToSynth();
-                initialized.current = true;
-              }
+              initialized.current = true;
             }
           });
       }
@@ -64,7 +41,6 @@ export default function AudioController() {
 
     // Begin loading preferred audio
     audio.src = '/music.m4a';
-    setIsUsingCustom(true);
     setCustomAudioUrl('/music.m4a');
     customAudioUrlRef.current = '/music.m4a';
 
@@ -74,14 +50,6 @@ export default function AudioController() {
         audio.src = '/music.mp3';
         setCustomAudioUrl('/music.mp3');
         customAudioUrlRef.current = '/music.mp3';
-      } else {
-        // Both failed
-        fallbackTriggered = true;
-        setIsUsingCustom(false);
-        if (initialized.current) {
-           ambientSynth.start();
-           setIsPlaying(true);
-        }
       }
     };
 
@@ -133,19 +101,16 @@ export default function AudioController() {
     };
   }, []);
 
-  // Removed complex fallback listeners block, replacing with clean implementation logic
-
   // Handle toggling play/pause easily with a single button click
   const handleTogglePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
     
     const activeUrl = customAudioUrl || customAudioUrlRef.current;
-    if ((isUsingCustom || activeUrl) && audioRef.current && activeUrl) {
+    if (activeUrl && audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        ambientSynth.stop();
         if (!audioRef.current.src || !audioRef.current.src.includes(activeUrl)) {
           audioRef.current.src = activeUrl;
         }
@@ -155,18 +120,7 @@ export default function AudioController() {
           })
           .catch(err => {
             console.warn("Audio play error:", err);
-            fallbackToSynth();
           });
-      }
-    } else {
-      // Synthesizer mode
-      if (isPlaying) {
-        ambientSynth.stop();
-        setIsPlaying(false);
-      } else {
-        ambientSynth.start();
-        setIsPlaying(true);
-        initialized.current = true;
       }
     }
   };
