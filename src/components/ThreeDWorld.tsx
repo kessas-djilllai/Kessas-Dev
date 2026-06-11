@@ -23,7 +23,7 @@ if (typeof window !== 'undefined') {
 }
 
 // 1.5. Custom High-Fidelity Procedural Starfield with twinkle properties and color variances
-function ProceduralStarField({ count = 2500 }: { count?: number }) {
+function ProceduralStarField({ count = 1800 }: { count?: number }) {
   const pointsRef = useRef<THREE.Points>(null);
 
   // High performance caching of points with beautiful celestial colors
@@ -86,6 +86,124 @@ function ProceduralStarField({ count = 2500 }: { count?: number }) {
         blending={THREE.AdditiveBlending}
       />
     </points>
+  );
+}
+
+// 1.8. Gorgeous Fast-Moving Shooting Stars (Meteors/نيازك)
+function ShootingStars() {
+  const count = 4;
+  const starsRef = useRef<THREE.Group[]>([]);
+  
+  // Track high-speed meteor physics completely in frame loops for 60fps animations with 0% re-render cost
+  const meteors = useMemo(() => {
+    return Array.from({ length: count }, (_, idx) => ({
+      visible: false,
+      x: 0,
+      y: 0,
+      z: 0,
+      vx: -24,
+      vy: -20,
+      vz: -4,
+      delay: idx * 2.5 + Math.random() * 3, // Staggered initial spawns
+      timer: 0,
+    }));
+  }, []);
+
+  useFrame((state, delta) => {
+    const dt = Math.min(delta, 0.1);
+    
+    meteors.forEach((m, i) => {
+      const ref = starsRef.current[i];
+      if (!ref) return;
+
+      m.timer += dt;
+
+      if (!m.visible) {
+        // Staggered trigger based on customizable delay loop
+        if (m.timer >= m.delay) {
+          m.visible = true;
+          m.timer = 0;
+          
+          // Match the spawn Y coordinate dynamically to the user's scroll depth
+          const viewportY = -globalScrollProgress * 18;
+          
+          // Spawn from top-right region of screen
+          m.x = (Math.random() - 0.1) * 16 + 4; 
+          m.y = viewportY + (Math.random() - 0.1) * 12 + 7;
+          m.z = (Math.random() - 0.5) * 8 - 3;
+          
+          const speedFactor = 0.5 + Math.random() * 0.5;
+          m.vx = (-15 - Math.random() * 8) * speedFactor;
+          m.vy = (-12 - Math.random() * 6) * speedFactor;
+          m.vz = (-2 - Math.random() * 2) * speedFactor;
+          
+          ref.position.set(m.x, m.y, m.z);
+          ref.visible = true;
+
+          // Swap to random glowing star hues (neon cyan, bright white, hot pink, gold)
+          const colors = ['#22d3ee', '#f43f5e', '#a855f7', '#fef08a', '#ffffff'];
+          const randomColor = colors[Math.floor(Math.random() * colors.length)];
+          const childMesh = ref.children[0] as THREE.Mesh;
+          const mat = childMesh?.material as THREE.MeshBasicMaterial;
+          if (mat) {
+            mat.color.set(randomColor);
+          }
+        } else {
+          ref.visible = false;
+        }
+      } else {
+        // Move meteor down-left diagonally
+        ref.position.x += m.vx * dt;
+        ref.position.y += m.vy * dt;
+        ref.position.z += m.vz * dt;
+
+        // Graceful visual fade-out towards the end of streak life
+        if (m.timer > 0.45) {
+          const fade = Math.max(0, 1 - (m.timer - 0.45) * 3);
+          ref.scale.set(fade, fade, fade);
+        } else {
+          ref.scale.set(1, 1, 1);
+        }
+
+        // Reset once passing target limits
+        const limitY = -globalScrollProgress * 18 - 14;
+        if (ref.position.y < limitY || m.timer > 1.0) {
+          m.visible = false;
+          m.timer = 0;
+          m.delay = Math.random() * 4 + 2; // Random 2-6s wait time until next streak
+        }
+      }
+    });
+  });
+
+  return (
+    <group>
+      {Array.from({ length: count }).map((_, i) => (
+        <group 
+          key={i} 
+          ref={(el) => { if (el) starsRef.current[i] = el; }} 
+          visible={false}
+          rotation={[0, 0, -Math.PI / 4.4]} // Precision-angled downwards and to the left
+        >
+          {/* Diagnostic cylindrical light streak trailing behind */}
+          <mesh>
+            <cylinderGeometry args={[0.001, 0.024, 2.0, 4]} />
+            <meshBasicMaterial 
+              color="#38bdf8" 
+              transparent={true} 
+              opacity={0.9} 
+              blending={THREE.AdditiveBlending}
+              depthWrite={false}
+            />
+          </mesh>
+          {/* Super brilliant star/comet core heading the movement */}
+          <mesh position={[0, -1.0, 0]}>
+            <sphereGeometry args={[0.045, 4, 4]} />
+            <meshBasicMaterial color="#ffffff" transparent opacity={0.95} />
+          </mesh>
+        </group>
+      ))}
+    </group>
   );
 }
 
@@ -197,8 +315,8 @@ function ModernPlanet() {
   useFrame((state, delta) => {
     if (!planetGroupRef.current) return;
     
-    // Smooth progress interpolation matching SectionGeometries
-    smoothedProgress.current = THREE.MathUtils.lerp(smoothedProgress.current, globalScrollProgress, 3 * delta);
+    // Smooth progress interpolation matching SectionGeometries (Faster 6 * delta for instant responsiveness)
+    smoothedProgress.current = THREE.MathUtils.lerp(smoothedProgress.current, globalScrollProgress, 6 * delta);
     const p = smoothedProgress.current;
 
     // Calculate correct distance and opacity based on smooth position
@@ -282,9 +400,9 @@ function ModernPlanet() {
 
   return (
     <group ref={planetGroupRef}>
-      {/* 1. Core Sphere: Polished 3D Obsidian-metal tech globe with dynamic circuitry */}
+      {/* 1. Core Sphere: Polished 3D Obsidian-metal tech globe with dynamic circuitry (Smooth high-quality segments) */}
       <mesh ref={coreRef}>
-        <sphereGeometry args={[1.0, 32, 32]} />
+        <sphereGeometry args={[1.0, 64, 64]} />
         <meshStandardMaterial 
           map={techTexture || undefined}
           roughness={0.12} 
@@ -294,9 +412,9 @@ function ModernPlanet() {
         />
       </mesh>
 
-      {/* 2. Outer Coaxial Holographic Continent Wireframe Layer (Cyber music grid overlay) */}
+      {/* 2. Outer Coaxial Holographic Continent Wireframe Layer (Cyber music grid overlay - Smooth high-quality segments) */}
       <mesh ref={coreHoloRef} rotation={[0.4, 0.8, 0.1]}>
-        <sphereGeometry args={[1.028, 32, 32]} />
+        <sphereGeometry args={[1.028, 48, 48]} />
         <meshStandardMaterial 
           color="#22d3ee" 
           emissive="#06b6d4" 
@@ -311,29 +429,29 @@ function ModernPlanet() {
       <group ref={beaconsGroupRef}>
         <group rotation={[0.2, 1.1, -0.4]}>
           <mesh position={[0, 1.015, 0]}>
-            <sphereGeometry args={[0.025, 6, 6]} />
+            <sphereGeometry args={[0.025, 8, 8]} />
             <meshStandardMaterial color="#ec4899" emissive="#ec4899" emissiveIntensity={6.0} transparent={true} opacity={1.0} />
           </mesh>
         </group>
         
         <group rotation={[-0.8, -0.5, 0.6]}>
           <mesh position={[0, 1.015, 0]}>
-            <sphereGeometry args={[0.025, 6, 6]} />
+            <sphereGeometry args={[0.025, 8, 8]} />
             <meshStandardMaterial color="#ffffff" emissive="#22d3ee" emissiveIntensity={6.0} transparent={true} opacity={1.0} />
           </mesh>
         </group>
 
         <group rotation={[1.2, -1.8, 0.2]}>
           <mesh position={[0, 1.015, 0]}>
-            <sphereGeometry args={[0.022, 6, 6]} />
+            <sphereGeometry args={[0.022, 8, 8]} />
             <meshStandardMaterial color="#eab308" emissive="#eab308" emissiveIntensity={5.0} transparent={true} opacity={1.0} />
           </mesh>
         </group>
       </group>
 
-      {/* 4. Atmospheric Shroud Glow (Soft cyan celestial aura) */}
+      {/* 4. Atmospheric Shroud Glow (Soft cyan celestial aura - Smooth high-quality segments) */}
       <mesh ref={shroudRef}>
-        <sphereGeometry args={[1.18, 24, 24]} />
+        <sphereGeometry args={[1.18, 48, 48]} />
         <meshBasicMaterial 
           color="#0891b2" 
           transparent={true} 
@@ -394,8 +512,8 @@ function SectionGeometries() {
   const currentProgress = useRef(0);
 
   useFrame((state, delta) => {
-    // Smooth scroll interpolation
-    currentProgress.current = THREE.MathUtils.lerp(currentProgress.current, globalScrollProgress, 3 * delta);
+    // Smooth scroll interpolation (Increased to 6 * delta for instant, lag-free reaction)
+    currentProgress.current = THREE.MathUtils.lerp(currentProgress.current, globalScrollProgress, 6 * delta);
     const p = currentProgress.current;
 
     if (planetRef.current) {
@@ -531,8 +649,8 @@ function CameraRig() {
   const currentProgress = useRef(0);
 
   useFrame((state, delta) => {
-    // Smooth interpolator (lerper) on the scroll progress
-    currentProgress.current = THREE.MathUtils.lerp(currentProgress.current, globalScrollProgress, 4 * delta);
+    // Smooth interpolator (lerper) on the scroll progress (Boosted responsiveness)
+    currentProgress.current = THREE.MathUtils.lerp(currentProgress.current, globalScrollProgress, 6 * delta);
     const p = currentProgress.current;
 
     // Camera 3D Bezier/Spline flight paths:
@@ -620,6 +738,7 @@ export default function ThreeDWorld() {
         <CameraRig />
         <DynamicLighting />
         <ProceduralStarField count={1800} />
+        <ShootingStars />
         <SectionGeometries />
         <CyberDust count={200} />
       </Canvas>

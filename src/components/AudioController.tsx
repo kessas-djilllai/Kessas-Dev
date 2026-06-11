@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Volume2, VolumeX, Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Volume2, VolumeX } from 'lucide-react';
+import { motion } from 'motion/react';
 import { ambientSynth } from '../utils/audioSynth';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function AudioController() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
-  const [notificationMsg, setNotificationMsg] = useState('');
   const { language } = useLanguage();
   const initialized = useRef(false);
 
@@ -22,18 +20,8 @@ export default function AudioController() {
     setIsUsingCustom(false);
     ambientSynth.start();
     setIsPlaying(true);
-    setNotificationMsg(
-      language === 'ar'
-        ? '⚠️ تعذر تشغيل ملف الموسيقى المرفوع (قد يكون فارغاً أو تالفاً). تم تفعيل المعزوفة الفضائية البديلة تلقائياً.'
-        : '⚠️ Music file empty or corrupted. Switched to generative spatial synth fallback.'
-    );
-    setShowNotification(true);
-    setTimeout(() => {
-      setShowNotification(false);
-    }, 7000);
   };
 
-  // Initialize HTML5 Audio element to check & load m4a/mp3 from the public directory
   useEffect(() => {
     const audio = new Audio();
     audio.loop = true;
@@ -52,6 +40,16 @@ export default function AudioController() {
           customAudioUrlRef.current = '/music.m4a';
           setIsUsingCustom(true);
           audio.src = '/music.m4a';
+          
+          // Try to play immediately on load (in case browser allows direct autoplay)
+          audio.play()
+            .then(() => {
+              setIsPlaying(true);
+              initialized.current = true;
+            })
+            .catch(() => {
+              // Normal behavior: browser blocked direct autoplay before gesture
+            });
           return;
         }
       } catch (e) {
@@ -68,6 +66,16 @@ export default function AudioController() {
           customAudioUrlRef.current = '/music.mp3';
           setIsUsingCustom(true);
           audio.src = '/music.mp3';
+          
+          // Try to play immediately on load
+          audio.play()
+            .then(() => {
+              setIsPlaying(true);
+              initialized.current = true;
+            })
+            .catch(() => {
+              // Normal: autoplay blocked
+            });
           return;
         }
       } catch (e) {
@@ -80,7 +88,7 @@ export default function AudioController() {
     return () => {
       audio.pause();
     };
-  }, [language]);
+  }, []);
 
   // Sync state between HTML5 audio element playing state and React state
   useEffect(() => {
@@ -114,15 +122,6 @@ export default function AudioController() {
         audioRef.current.play()
           .then(() => {
             setIsPlaying(true);
-            setNotificationMsg(
-              language === 'ar'
-                ? '🔊 تم تشغيل الموسيقى الخلفية المدمجة للموقع'
-                : '🔊 Built-in system soundtrack active'
-            );
-            setShowNotification(true);
-            setTimeout(() => {
-              setShowNotification(false);
-            }, 5000);
           })
           .catch(err => {
             console.warn("Could not autoplay integrated music:", err);
@@ -133,35 +132,40 @@ export default function AudioController() {
         // Fallback to the beautiful custom synthesizer
         ambientSynth.start();
         setIsPlaying(true);
-        
-        setNotificationMsg(
-          language === 'ar' 
-            ? '🌌 تم تشغيل الموسيقى الفضائية التوليدية' 
-            : '🌌 Cosmic generative soundscape initialized'
-        );
-        setShowNotification(true);
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 5000);
       }
 
       cleanupListeners();
     };
 
     const cleanupListeners = () => {
-      window.removeEventListener('click', startAudioOnInteraction);
-      window.removeEventListener('scroll', startAudioOnInteraction);
-      window.removeEventListener('keydown', startAudioOnInteraction);
-      window.removeEventListener('touchstart', startAudioOnInteraction);
+      const targets = [window, document, document.body];
+      const events = ['click', 'touchstart', 'mousedown', 'pointerdown', 'scroll', 'keydown', 'wheel'];
+      
+      targets.forEach(target => {
+        if (!target) return;
+        events.forEach(evt => {
+          try {
+            target.removeEventListener(evt, startAudioOnInteraction);
+          } catch (e) {}
+        });
+      });
     };
 
-    window.addEventListener('click', startAudioOnInteraction, { passive: true });
-    window.addEventListener('scroll', startAudioOnInteraction, { passive: true });
-    window.addEventListener('keydown', startAudioOnInteraction, { passive: true });
-    window.addEventListener('touchstart', startAudioOnInteraction, { passive: true });
+    // Attach listeners to multiple contexts to capture any initial gesture securely
+    const targets = [window, document, document.body];
+    const events = ['click', 'touchstart', 'mousedown', 'pointerdown', 'scroll', 'keydown', 'wheel'];
+
+    targets.forEach(target => {
+      if (!target) return;
+      events.forEach(evt => {
+        try {
+          target.addEventListener(evt, startAudioOnInteraction, { passive: true, once: true });
+        } catch (e) {}
+      });
+    });
 
     return cleanupListeners;
-  }, [isUsingCustom, customAudioUrl, language]);
+  }, [isUsingCustom, customAudioUrl]);
 
   // Handle toggling play/pause easily with a single button click
   const handleTogglePlay = (e: React.MouseEvent) => {
@@ -204,24 +208,6 @@ export default function AudioController() {
       id="ambient-sound-controller" 
       className="fixed bottom-6 left-6 z-50 flex items-center gap-3 pointer-events-none"
     >
-      {/* Toast Notification */}
-      <AnimatePresence>
-        {showNotification && (
-          <motion.div
-            initial={{ opacity: 0, x: -30, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -20, scale: 0.95 }}
-            className={`pointer-events-auto flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-2xl shadow-2xl backdrop-blur-xl border text-xs font-semibold select-none max-w-sm
-              ${language === 'ar' ? 'font-sans direction-rtl text-right' : 'font-mono text-left'}
-              bg-white/95 border-slate-200/90 text-slate-800 
-              dark:bg-slate-900/95 dark:border-slate-800/90 dark:text-slate-100`}
-          >
-            <Sparkles className="w-4 h-4 text-blue-500 shrink-0" />
-            <span className="truncate">{notificationMsg}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div className="flex items-center gap-2 pointer-events-auto bg-white/50 dark:bg-slate-950/60 p-1.5 rounded-full border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-md shadow-lg">
         {/* Play/Pause/Mute Speaker Button */}
         <motion.button
