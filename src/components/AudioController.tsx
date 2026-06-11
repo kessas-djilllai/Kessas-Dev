@@ -18,24 +18,34 @@ export default function AudioController() {
     audio.loop = true;
     audioRef.current = audio;
 
-    const attemptPlay = () => {
-      if (initialized.current) return;
+    let isPlayPending = false;
 
+    const attemptPlay = () => {
+      if (initialized.current || isPlayPending) return;
+
+      isPlayPending = true;
       const playPromise = audio.play();
+      
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
             setIsPlaying(true);
             initialized.current = true;
+            isPlayPending = false;
+            cleanupListeners(); // Remove listeners once successfully started
           })
           .catch(err => {
+            isPlayPending = false;
             if (err.name === 'NotAllowedError') {
-              // Expected browser block, wait for user gesture quietly
+              // Expected browser block, wait for true user gesture
             } else {
               console.warn("Audio play error:", err);
               initialized.current = true;
+              cleanupListeners();
             }
           });
+      } else {
+        isPlayPending = false;
       }
     };
 
@@ -56,13 +66,13 @@ export default function AudioController() {
     audio.addEventListener('error', handleError);
     
     // As soon as data is ready, try to play (browsers with autoplay allowed)
-    audio.addEventListener('canplay', attemptPlay);
+    audio.addEventListener('canplay', attemptPlay, { once: true });
     
     // Also try immediately
     attemptPlay();
 
     // Attach interaction listeners to broadly capture user gestures for unlocking audio
-    const events = ['click', 'touchstart', 'mousedown', 'pointerdown', 'keydown'];
+    const events = ['click', 'touchstart', 'mousedown', 'pointerdown', 'keydown', 'scroll', 'touchend'];
     const cleanupListeners = () => {
       events.forEach(evt => {
         window.removeEventListener(evt, attemptPlay);
@@ -78,7 +88,6 @@ export default function AudioController() {
     return () => {
       cleanupListeners();
       audio.removeEventListener('error', handleError);
-      audio.removeEventListener('canplay', attemptPlay);
       audio.pause();
     };
   }, []);
