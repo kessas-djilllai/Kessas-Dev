@@ -113,20 +113,12 @@ export default function AudioController() {
 
   // Auto-play as soon as possible on any first interaction (clicks, scrolls, physical keys, touch)
   useEffect(() => {
-    const startAudioOnInteraction = async () => {
+    const startAudioOnInteraction = () => {
       if (initialized.current) return;
-
-      // Yield event loop to ensure any pending audio check resolves, preventing race conditions
-      let activeUrl: string | null = null;
-      if (audioCheckPromise.current) {
-        activeUrl = await audioCheckPromise.current;
-      } else {
-        activeUrl = customAudioUrl || customAudioUrlRef.current;
-      }
-
-      if (initialized.current) return; // safeguard for concurrent triggers
       initialized.current = true;
-      
+
+      const activeUrl = customAudioUrl || customAudioUrlRef.current;
+
       if (activeUrl && audioRef.current) {
         if (!audioRef.current.src || !audioRef.current.src.includes(activeUrl)) {
           audioRef.current.src = activeUrl;
@@ -139,10 +131,30 @@ export default function AudioController() {
             console.warn("Could not autoplay integrated music:", err);
             fallbackToSynth();
           });
+      } else if (audioRef.current) {
+        // Fallback or speculative unlocking. The promise might not have answered yet.
+        // Try m4a directly within synchronous user gesture
+        if (!audioRef.current.src) {
+          audioRef.current.src = '/music.m4a';
+        }
+        audioRef.current.play()
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch(err => {
+            console.warn("Could not preload speculatively:", err);
+            // Re-attempt with mp3
+            if (audioRef.current) {
+              audioRef.current.src = '/music.mp3';
+              audioRef.current.play()
+                .then(() => { setIsPlaying(true); })
+                .catch(() => { fallbackToSynth(); });
+            } else {
+              fallbackToSynth();
+            }
+          });
       } else {
-        // Fallback to the beautiful space synthesizer
-        ambientSynth.start();
-        setIsPlaying(true);
+        fallbackToSynth();
       }
 
       cleanupListeners();
