@@ -27,68 +27,90 @@ export default function AudioController() {
     const audio = new Audio();
     audio.loop = true;
     audioRef.current = audio;
+    
+    let fallbackTriggered = false;
 
-    const checkAndSetAudio = async (): Promise<string | null> => {
-      const checkFile = async (url: string): Promise<boolean> => {
-        try {
-          // Standard GET request is compatible with all CDNs (including Vercel / GitHub Pages)
-          const response = await fetch(url, { method: 'GET' });
-          if (!response.ok) return false;
-
-          const contentType = response.headers.get('content-type') || '';
-          if (contentType.includes('text/html')) {
-            // It's a 404 SPA fallback redirecting to index.html
-            return false;
-          }
-
-          const contentLength = response.headers.get('content-length');
-          if (contentLength === '0') {
-            return false;
-          }
-
-          return true;
-        } catch (e) {
-          console.warn(`File check exception for ${url}:`, e);
-          return false;
-        }
-      };
-
-      // 1. Try preferred music.m4a
-      const hasM4a = await checkFile('/music.m4a');
-      if (hasM4a) {
-        return '/music.m4a';
+    const attemptPlay = () => {
+      if (initialized.current) return;
+      
+      if (fallbackTriggered) {
+        ambientSynth.start();
+        setIsPlaying(true);
+        initialized.current = true;
+        return;
       }
 
-      // 2. Try fallback music.mp3
-      const hasMp3 = await checkFile('/music.mp3');
-      if (hasMp3) {
-        return '/music.mp3';
-      }
-
-      return null;
-    };
-
-    audioCheckPromise.current = checkAndSetAudio().then((url) => {
-      if (url) {
-        setCustomAudioUrl(url);
-        customAudioUrlRef.current = url;
-        setIsUsingCustom(true);
-        audio.src = url;
-
-        // Try playing immediately if browser permissions allow direct autoplay
-        audio.play()
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
           .then(() => {
             setIsPlaying(true);
             initialized.current = true;
           })
-          .catch(() => {
-            // Blocked by browser browser security - normal behavior
+          .catch(err => {
+            if (err.name === 'NotAllowedError') {
+              // Expected browser block, wait for user gesture quietly
+            } else {
+              console.warn("Audio play error:", err);
+              if (!fallbackTriggered) {
+                fallbackTriggered = true;
+                fallbackToSynth();
+                initialized.current = true;
+              }
+            }
           });
       }
-      return url;
+    };
+
+    // Begin loading preferred audio
+    audio.src = '/music.m4a';
+    setIsUsingCustom(true);
+    setCustomAudioUrl('/music.m4a');
+    customAudioUrlRef.current = '/music.m4a';
+
+    const handleError = () => {
+      if (audio.src.includes('.m4a')) {
+        // Fallback to mp3
+        audio.src = '/music.mp3';
+        setCustomAudioUrl('/music.mp3');
+        customAudioUrlRef.current = '/music.mp3';
+      } else {
+        // Both failed
+        fallbackTriggered = true;
+        setIsUsingCustom(false);
+        if (initialized.current) {
+           ambientSynth.start();
+           setIsPlaying(true);
+        }
+      }
+    };
+
+    audio.addEventListener('error', handleError);
+    
+    // As soon as data is ready, try to play (browsers with autoplay allowed)
+    audio.addEventListener('canplay', attemptPlay);
+    
+    // Also try immediately
+    attemptPlay();
+
+    // Attach interaction listeners to broadly capture user gestures for unlocking audio
+    const events = ['click', 'touchstart', 'mousedown', 'pointerdown', 'keydown'];
+    const cleanupListeners = () => {
+      events.forEach(evt => {
+        window.removeEventListener(evt, attemptPlay);
+        document.removeEventListener(evt, attemptPlay);
+      });
+    };
+
+    events.forEach(evt => {
+      window.addEventListener(evt, attemptPlay, { passive: true });
+      document.addEventListener(evt, attemptPlay, { passive: true });
     });
 
     return () => {
+      cleanupListeners();
+      audio.removeEventListener('error', handleError);
+      audio.removeEventListener('canplay', attemptPlay);
       audio.pause();
     };
   }, []);
@@ -111,84 +133,7 @@ export default function AudioController() {
     };
   }, []);
 
-  // Auto-play as soon as possible on any first interaction (clicks, scrolls, physical keys, touch)
-  useEffect(() => {
-    const startAudioOnInteraction = () => {
-      if (initialized.current) return;
-      initialized.current = true;
-
-      const activeUrl = customAudioUrl || customAudioUrlRef.current;
-
-      if (activeUrl && audioRef.current) {
-        if (!audioRef.current.src || !audioRef.current.src.includes(activeUrl)) {
-          audioRef.current.src = activeUrl;
-        }
-        audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-          })
-          .catch(err => {
-            console.warn("Could not autoplay integrated music:", err);
-            fallbackToSynth();
-          });
-      } else if (audioRef.current) {
-        // Fallback or speculative unlocking. The promise might not have answered yet.
-        // Try m4a directly within synchronous user gesture
-        if (!audioRef.current.src) {
-          audioRef.current.src = '/music.m4a';
-        }
-        audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-          })
-          .catch(err => {
-            console.warn("Could not preload speculatively:", err);
-            // Re-attempt with mp3
-            if (audioRef.current) {
-              audioRef.current.src = '/music.mp3';
-              audioRef.current.play()
-                .then(() => { setIsPlaying(true); })
-                .catch(() => { fallbackToSynth(); });
-            } else {
-              fallbackToSynth();
-            }
-          });
-      } else {
-        fallbackToSynth();
-      }
-
-      cleanupListeners();
-    };
-
-    const cleanupListeners = () => {
-      const targets = [window, document, document.body];
-      const events = ['click', 'touchstart', 'mousedown', 'pointerdown', 'scroll', 'keydown', 'wheel'];
-      
-      targets.forEach(target => {
-        if (!target) return;
-        events.forEach(evt => {
-          try {
-            target.removeEventListener(evt, startAudioOnInteraction);
-          } catch (e) {}
-        });
-      });
-    };
-
-    // Attach listeners to multiple contexts to capture any initial gesture securely
-    const targets = [window, document, document.body];
-    const events = ['click', 'touchstart', 'mousedown', 'pointerdown', 'scroll', 'keydown', 'wheel'];
-
-    targets.forEach(target => {
-      if (!target) return;
-      events.forEach(evt => {
-        try {
-          target.addEventListener(evt, startAudioOnInteraction, { passive: true, once: true });
-        } catch (e) {}
-      });
-    });
-
-    return cleanupListeners;
-  }, [isUsingCustom, customAudioUrl]);
+  // Removed complex fallback listeners block, replacing with clean implementation logic
 
   // Handle toggling play/pause easily with a single button click
   const handleTogglePlay = (e: React.MouseEvent) => {
