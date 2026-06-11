@@ -1,7 +1,6 @@
 import { motion } from 'motion/react';
 import { ArrowDown, Briefcase, Code, Star } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import ThreeDProjectViewer from './ThreeDProjectViewer';
 
 export default function Hero() {
   const { t, language } = useLanguage();
@@ -111,10 +110,8 @@ export default function Hero() {
           </motion.div>
         </motion.div>
 
-        {/* Right Side Content - Dynamic 3D Project Interactive Hologram Showcase */}
-        <div className="lg:col-span-5 w-full flex items-center justify-center py-6">
-          <ThreeDProjectViewer />
-        </div>
+        {/* Right Side Content - Empty layout spacer so the stunning background 3D planet is fully visible */}
+        <div className="lg:col-span-5 w-full min-h-[150px] lg:min-h-[400px] flex items-center justify-center py-6 pointer-events-none" />
 
       </div>
     </section>

@@ -10,7 +10,7 @@
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 transition-colors duration-300 antialiased;
+  @apply bg-transparent text-slate-900 transition-colors duration-300 antialiased;
   overflow-x: hidden;
   line-height: 1.6;
 }
@@ -20,7 +20,7 @@ html[lang="en"] body {
 }
 
 html.dark body {
-  @apply bg-slate-950 text-slate-50;
+  @apply bg-transparent text-slate-50;
 }
 
 .glass-panel {

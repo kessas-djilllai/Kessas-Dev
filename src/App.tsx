@@ -43,16 +43,18 @@ function AppContent() {
   return (
     <div className="min-h-screen relative font-sans selection:bg-blue-500/30">
       <ThreeDWorld />
-      <Navbar theme={theme} toggleTheme={toggleTheme} />
-      
-      <main>
-        <Hero />
-        <Skills />
-        <Portfolio />
-        <Pricing />
-      </main>
+      <div className="relative z-10">
+        <Navbar theme={theme} toggleTheme={toggleTheme} />
+        
+        <main>
+          <Hero />
+          <Skills />
+          <Portfolio />
+          <Pricing />
+        </main>
 
-      <Contact />
+        <Contact />
+      </div>
     </div>
   );
 }
