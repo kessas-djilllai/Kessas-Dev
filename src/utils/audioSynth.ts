@@ -3,8 +3,10 @@ import * as THREE from 'three';
 class SpaceAmbientSynth {
   private ctx: AudioContext | null = null;
   private primaryGain: GainNode | null = null;
-  private delayNode: DelayNode | null = null;
-  private delayFeedback: GainNode | null = null;
+  private delayNode1: DelayNode | null = null;
+  private delayNode2: DelayNode | null = null;
+  private delayGain1: GainNode | null = null;
+  private delayGain2: GainNode | null = null;
   public isRunning: boolean = false;
   private intervalId: any = null;
   private arpIntervalId: any = null;
@@ -25,19 +27,28 @@ class SpaceAmbientSynth {
       this.primaryGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
       this.primaryGain.connect(this.ctx.destination);
       
-      // Feedback delay to create spacious, echoey galactic sounds
-      this.delayNode = this.ctx.createDelay(2.0);
-      this.delayFeedback = this.ctx.createGain();
+      // Feed-forward multi-tap spatial delays: Pristine spacial depth with zero feedback calculation penalty!
+      this.delayNode1 = this.ctx.createDelay(2.0);
+      this.delayNode1.delayTime.setValueAtTime(0.6, this.ctx.currentTime); // Tap 1 (600ms)
       
-      this.delayNode.delayTime.setValueAtTime(0.7, this.ctx.currentTime); // 700ms echo
-      this.delayFeedback.gain.setValueAtTime(0.35, this.ctx.currentTime); // 35% feedback
+      this.delayNode2 = this.ctx.createDelay(3.0);
+      this.delayNode2.delayTime.setValueAtTime(1.2, this.ctx.currentTime); // Tap 2 (1200ms)
+
+      this.delayGain1 = this.ctx.createGain();
+      this.delayGain1.gain.setValueAtTime(0.3, this.ctx.currentTime); // 30% intensity
+
+      this.delayGain2 = this.ctx.createGain();
+      this.delayGain2.gain.setValueAtTime(0.18, this.ctx.currentTime); // 18% intensity
       
-      // Infinite/Long tail decay path
-      this.delayNode.connect(this.delayFeedback);
-      this.delayFeedback.connect(this.delayNode);
+      // Connect first tap to primary
+      this.delayNode1.connect(this.delayGain1);
+      this.delayGain1.connect(this.primaryGain);
+
+      // Connect second tap in series to primary
+      this.delayNode1.connect(this.delayNode2);
+      this.delayNode2.connect(this.delayGain2);
+      this.delayGain2.connect(this.primaryGain);
       
-      // Connect delay to output 
-      this.delayNode.connect(this.primaryGain);
     } catch (e) {
       console.warn("Web Audio API not supported on this platform: ", e);
     }
@@ -47,10 +58,14 @@ class SpaceAmbientSynth {
     if (!this.ctx || !this.primaryGain) return;
     const t = this.ctx.currentTime;
     
+    let osc: OscillatorNode | null = null;
+    let gain: GainNode | null = null;
+    let filter: BiquadFilterNode | null = null;
+
     try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const filter = this.ctx.createBiquadFilter();
+      osc = this.ctx.createOscillator();
+      gain = this.ctx.createGain();
+      filter = this.ctx.createBiquadFilter();
 
       // Soft triangle wave for soothing pads
       osc.type = Math.random() > 0.55 ? 'sine' : 'triangle';
@@ -58,9 +73,9 @@ class SpaceAmbientSynth {
 
       // Lowpass filter to sweep harmonics away (warm celestial atmosphere)
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(250, t);
-      filter.frequency.exponentialRampToValueAtTime(750, t + attack);
-      filter.frequency.exponentialRampToValueAtTime(150, t + duration);
+      filter.frequency.setValueAtTime(220, t);
+      filter.frequency.exponentialRampToValueAtTime(700, t + attack);
+      filter.frequency.exponentialRampToValueAtTime(120, t + duration);
 
       // Smooth envelope controls
       gain.gain.setValueAtTime(0, t);
@@ -73,12 +88,29 @@ class SpaceAmbientSynth {
       
       // Connect to master volume and ambient spatial delay line
       gain.connect(this.primaryGain);
-      if (this.delayNode) gain.connect(this.delayNode);
+      if (this.delayNode1) gain.connect(this.delayNode1);
 
       osc.start(t);
       osc.stop(t + duration);
+
+      // Robust memory leak prevention: explicit disconnection when note plays out!
+      const currentOsc = osc;
+      const currentFilter = filter;
+      const currentGain = gain;
+      osc.onended = () => {
+        try {
+          currentOsc.disconnect();
+          currentFilter.disconnect();
+          currentGain.disconnect();
+        } catch (e) {}
+      };
     } catch (err) {
-      // Ignored gracefully
+      // Clean up in case of setup failure
+      try {
+        if (osc) osc.disconnect();
+        if (filter) filter.disconnect();
+        if (gain) gain.disconnect();
+      } catch (e) {}
     }
   }
 
@@ -86,16 +118,20 @@ class SpaceAmbientSynth {
     if (!this.ctx || !this.primaryGain) return;
     const t = this.ctx.currentTime;
 
+    let osc: OscillatorNode | null = null;
+    let gain: GainNode | null = null;
+    let filter: BiquadFilterNode | null = null;
+
     try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const filter = this.ctx.createBiquadFilter();
+      osc = this.ctx.createOscillator();
+      gain = this.ctx.createGain();
+      filter = this.ctx.createBiquadFilter();
 
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, t);
 
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(1600, t);
+      filter.frequency.setValueAtTime(1400, t);
 
       gain.gain.setValueAtTime(0, t);
       // Fast cybernetic attack
@@ -106,11 +142,29 @@ class SpaceAmbientSynth {
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(this.primaryGain);
-      if (this.delayNode) gain.connect(this.delayNode);
+      if (this.delayNode1) gain.connect(this.delayNode1);
 
       osc.start(t);
       osc.stop(t + 1.3);
-    } catch (e) {}
+
+      // Robust memory leak prevention: explicit disconnection when note plays out!
+      const currentOsc = osc;
+      const currentFilter = filter;
+      const currentGain = gain;
+      osc.onended = () => {
+        try {
+          currentOsc.disconnect();
+          currentFilter.disconnect();
+          currentGain.disconnect();
+        } catch (e) {}
+      };
+    } catch (e) {
+      try {
+        if (osc) osc.disconnect();
+        if (filter) filter.disconnect();
+        if (gain) gain.disconnect();
+      } catch (err) {}
+    }
   }
 
   start() {

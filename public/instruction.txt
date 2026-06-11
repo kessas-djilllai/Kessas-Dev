@@ -1,0 +1,21 @@
+Instructions for Background Music Integration:
+----------------------------------------------
+To merge your own background music into the website so that it plays automatically upon entering the site:
+
+1. Prepare any audio file (such as .mp3 or .wav).
+2. Rename the file to: music.mp3
+3. Upload it directly or put it into this folder: /public/music.mp3
+4. Now, rebuild or refresh the application.
+
+Our system is set up to automatically detect files placed at `/public/music.mp3` and play them instead of the synth generator as soon as a visitor scrolls or clicks anywhere on the page!
+
+---
+
+تعليمات دمج الموسيقى الخلفية في الموقع:
+--------------------------------------
+لدمج الموسيقى الخاصة بك داخل ملفات الموقع حتى تعمل تلقائياً للزوار عند الدخول للموقع:
+
+1. جهّز أي ملف صوتي (مثل ملف بصيغة mp3).
+2. أعد تسمية الملف ليصبح بدقة: music.mp3
+3. قم برفع الملف ووضعه في هذا المجلد بالمسار التالي: /public/music.mp3
+4. بمجرد وضعه هناك، سيقوم النظام تلقائياً باكتشاف وجوده وتشغيله بمجرد قيام الزائر بأول حركة أو تفاعل في الموقع (نقرة، تمرير، أو تفاعل لمس)!

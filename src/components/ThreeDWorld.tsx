@@ -125,16 +125,15 @@ function Orbiter({
   return (
     <group ref={orbiterRef}>
       <mesh>
-        <sphereGeometry args={[0.05, 12, 12]} />
+        <sphereGeometry args={[0.045, 8, 8]} />
         <meshStandardMaterial 
           color={color} 
           emissive={emissionColor} 
-          emissiveIntensity={3.0 * opacity} 
+          emissiveIntensity={4.0 * opacity} 
           transparent={true}
           opacity={opacity}
         />
       </mesh>
-      <pointLight color={emissionColor} intensity={12 * opacity} distance={3.0} decay={2.0} />
     </group>
   );
 }
@@ -312,32 +311,29 @@ function ModernPlanet() {
       <group ref={beaconsGroupRef}>
         <group rotation={[0.2, 1.1, -0.4]}>
           <mesh position={[0, 1.015, 0]}>
-            <sphereGeometry args={[0.03, 8, 8]} />
-            <meshBasicMaterial color="#ec4899" transparent={true} opacity={1.0} />
+            <sphereGeometry args={[0.025, 6, 6]} />
+            <meshStandardMaterial color="#ec4899" emissive="#ec4899" emissiveIntensity={6.0} transparent={true} opacity={1.0} />
           </mesh>
-          <pointLight position={[0, 1.08, 0]} color="#ec4899" intensity={15} distance={2.5} />
         </group>
         
         <group rotation={[-0.8, -0.5, 0.6]}>
           <mesh position={[0, 1.015, 0]}>
-            <sphereGeometry args={[0.03, 8, 8]} />
-            <meshBasicMaterial color="#ffffff" transparent={true} opacity={1.0} />
+            <sphereGeometry args={[0.025, 6, 6]} />
+            <meshStandardMaterial color="#ffffff" emissive="#22d3ee" emissiveIntensity={6.0} transparent={true} opacity={1.0} />
           </mesh>
-          <pointLight position={[0, 1.08, 0]} color="#22d3ee" intensity={18} distance={3.0} />
         </group>
 
         <group rotation={[1.2, -1.8, 0.2]}>
           <mesh position={[0, 1.015, 0]}>
-            <sphereGeometry args={[0.02, 8, 8]} />
-            <meshBasicMaterial color="#eab308" transparent={true} opacity={1.0} />
+            <sphereGeometry args={[0.022, 6, 6]} />
+            <meshStandardMaterial color="#eab308" emissive="#eab308" emissiveIntensity={5.0} transparent={true} opacity={1.0} />
           </mesh>
-          <pointLight position={[0, 1.08, 0]} color="#eab308" intensity={12} distance={2.0} />
         </group>
       </group>
 
       {/* 4. Atmospheric Shroud Glow (Soft cyan celestial aura) */}
       <mesh ref={shroudRef}>
-        <sphereGeometry args={[1.18, 32, 32]} />
+        <sphereGeometry args={[1.18, 24, 24]} />
         <meshBasicMaterial 
           color="#0891b2" 
           transparent={true} 
@@ -350,31 +346,31 @@ function ModernPlanet() {
       {/* 5. Coaxial Saturn-Style Cyber Rings */}
       {/* Dynamic Cyber Ring 1 (Vibrant Neon Pink/Magenta) */}
       <mesh ref={ring1Ref} rotation={[Math.PI / 2.3, 0.1, 0]}>
-        <torusGeometry args={[1.55, 0.05, 12, 64]} />
+        <torusGeometry args={[1.55, 0.03, 6, 36]} />
         <meshStandardMaterial 
           color="#d946ef" 
           emissive="#d946ef" 
           emissiveIntensity={3.2} 
-          roughness={0.1}
-          metalness={0.9}
+          roughness={0.15}
+          metalness={0.8}
         />
       </mesh>
 
       {/* Dynamic Cyber Ring 2 (Electric neon Cyan) */}
       <mesh ref={ring2Ref} rotation={[Math.PI / 2.3, 0.1, 0]}>
-        <torusGeometry args={[1.85, 0.015, 8, 80]} />
+        <torusGeometry args={[1.85, 0.012, 4, 40]} />
         <meshStandardMaterial 
           color="#06b6d4" 
           emissive="#06b6d4" 
           emissiveIntensity={4.2} 
-          roughness={0.1}
-          metalness={1.0}
+          roughness={0.15}
+          metalness={0.8}
         />
       </mesh>
 
       {/* Diagonal Purple Orbit Track coordinate line */}
       <mesh ref={ring3Ref} rotation={[0.4, 0, Math.PI / 4]}>
-        <torusGeometry args={[2.2, 0.005, 4, 64]} />
+        <torusGeometry args={[2.2, 0.004, 3, 30]} />
         <meshStandardMaterial 
           color="#a855f7" 
           emissive="#a855f7" 
@@ -599,18 +595,33 @@ function DynamicLighting() {
 
 // Main 3D Canvas
 export default function ThreeDWorld() {
+  const [dpr, setDpr] = useState<[number, number]>([1, 1]);
+
+  useEffect(() => {
+    // Dynamic DPR targeting for balanced high resolution vs smooth framerates on standard/retina mobile devices
+    const devicePixelRatio = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
+    const maxDPR = Math.min(devicePixelRatio, 1.25);
+    setDpr([1, maxDPR]);
+  }, []);
+
   return (
     <div className="fixed inset-0 w-full h-full z-0 bg-slate-50 dark:bg-slate-950 transition-colors duration-700 pointer-events-none">
       <Canvas
         camera={{ position: [0, 0, 5], fov: 60 }}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ 
+          antialias: true, 
+          alpha: true, 
+          powerPreference: "high-performance",
+          failIfMajorPerformanceCaveat: false
+        }}
+        dpr={dpr}
       >
         {/* Continuous interactive camera, lights, meshes, and points */}
         <CameraRig />
         <DynamicLighting />
-        <ProceduralStarField count={2500} />
+        <ProceduralStarField count={1800} />
         <SectionGeometries />
-        <CyberDust count={300} />
+        <CyberDust count={200} />
       </Canvas>
     </div>
   );
