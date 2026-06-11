@@ -16,6 +16,7 @@ export default function AudioController() {
   useEffect(() => {
     const audio = new Audio();
     audio.loop = true;
+    audio.preload = 'auto'; // Force browser to fetch the audio immediately
     audioRef.current = audio;
 
     let isPlayPending = false;
@@ -36,12 +37,10 @@ export default function AudioController() {
           })
           .catch(err => {
             isPlayPending = false;
-            if (err.name === 'NotAllowedError') {
+            if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
               // Expected browser block, wait for true user gesture
             } else {
               console.warn("Audio play error:", err);
-              initialized.current = true;
-              cleanupListeners();
             }
           });
       } else {
@@ -51,6 +50,7 @@ export default function AudioController() {
 
     // Begin loading preferred audio
     audio.src = '/music.m4a';
+    audio.load(); // Explicitly trigger loading
     setCustomAudioUrl('/music.m4a');
     customAudioUrlRef.current = '/music.m4a';
 
