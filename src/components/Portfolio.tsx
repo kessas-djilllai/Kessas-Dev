@@ -7,7 +7,7 @@ import Tilt3D from './Tilt3D';
 export default function Portfolio() {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(1);
   const [dragOffset, setDragOffset] = useState(0);
   const [containerWidth, setContainerWidth] = useState(800);
 
@@ -206,7 +206,8 @@ export default function Portfolio() {
           {/* Active Navigation Dot Selectors */}
           <div className="flex justify-center gap-2.5 mt-8 z-20 relative">
             {projects.map((_, i) => {
-              const isActive = activeIndex === i;
+              const currentVisualIndex = Math.max(0, Math.min(projects.length - 1, Math.round(activeIndex + dragOffset)));
+              const isActive = currentVisualIndex === i;
               return (
                 <button 
                   key={i} 

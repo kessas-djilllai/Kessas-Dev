@@ -23,7 +23,7 @@ export default function Hero() {
   } as const;
   
   return (
-    <section className="relative py-12 md:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col justify-center min-h-[92vh] overflow-hidden">
+    <section className="relative pt-32 pb-12 md:pt-40 md:pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col justify-center min-h-[92vh] overflow-hidden">
       {/* Premium Ambient Light Glows */}
       <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[350px] md:w-[600px] h-[350px] md:h-[600px] bg-blue-500/10 dark:bg-blue-600/10 rounded-full blur-[130px] -z-10 pointer-events-none" />
       <div className="absolute top-1/3 right-1/4 -translate-y-1/2 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-indigo-500/10 dark:bg-purple-600/10 rounded-full blur-[130px] -z-10 pointer-events-none" />
@@ -39,20 +39,6 @@ export default function Hero() {
             language === 'ar' ? 'lg:text-right lg:items-start' : 'lg:text-left lg:items-start'
           } items-center w-full`}
         >
-          {/* Active status pulse pill with 3D shadow */}
-          <motion.div 
-            variants={itemVariants}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/80 shadow-[0_4px_24px_rgba(37,99,235,0.06)] mb-6 hover:shadow-[0_4px_30px_rgba(37,99,235,0.12)] transition-shadow duration-300"
-          >
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-            <span className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-350 tracking-tight">
-              {t('availableForWork')}
-            </span>
-          </motion.div>
-
           <motion.h1 
             variants={itemVariants}
             className="text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-black tracking-tight text-slate-900 dark:text-white mb-6 leading-[1.15] sm:leading-[1.12]"

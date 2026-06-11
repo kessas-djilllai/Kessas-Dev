@@ -1,7 +1,6 @@
 import { motion } from 'motion/react';
 import { Smartphone, Code2, Server, Database } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import Tilt3D from './Tilt3D';
 
 export default function Skills() {
   const { t } = useLanguage();
@@ -66,41 +65,34 @@ export default function Skills() {
               transition={{ delay: index * 0.1, duration: 0.6 }}
               className="p-1"
             >
-              <Tilt3D strength={8} scale={1.01} className="h-full">
+              <div 
+                className={`bento-card group flex flex-col h-full bg-gradient-to-br from-white to-slate-50 hover:to-white dark:from-slate-900 dark:to-slate-950/40 border-2 border-slate-200/60 dark:border-slate-800/60 rounded-[2.5rem] p-8 md:p-10`}
+              >
                 <div 
-                  className={`bento-card group flex flex-col h-full bg-gradient-to-br from-white to-slate-50 hover:to-white dark:from-slate-900 dark:to-slate-950/40 border-2 border-slate-200/60 dark:border-slate-800/60 rounded-[2.5rem] p-8 md:p-10`}
-                  style={{ transformStyle: 'preserve-3d' }}
+                  className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center mb-8 border border-slate-100 dark:border-slate-800 transition-all duration-500 shadow-sm"
                 >
-                  <div 
-                    className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center mb-8 border border-slate-100 dark:border-slate-800 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-sm"
-                    style={{ transform: 'translateZ(30px)' }}
-                  >
-                    {skill.icon}
-                  </div>
-                  <h3 
-                    className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tight"
-                    style={{ transform: 'translateZ(40px)' }}
-                  >
-                    {skill.title}
-                  </h3>
-                  <p 
-                    className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed text-lg flex-grow font-medium"
-                    style={{ transform: 'translateZ(20px)' }}
-                  >
-                    {skill.desc}
-                  </p>
-                  <div 
-                    className="flex flex-wrap gap-2 mt-auto"
-                    style={{ transform: 'translateZ(35px)' }}
-                  >
-                    {skill.tags.map((tag, i) => (
-                      <span key={i} className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl ${skill.tagColor} transition-all`}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                  {skill.icon}
                 </div>
-              </Tilt3D>
+                <h3 
+                  className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tight"
+                >
+                  {skill.title}
+                </h3>
+                <p 
+                  className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed text-lg flex-grow font-medium"
+                >
+                  {skill.desc}
+                </p>
+                <div 
+                  className="flex flex-wrap gap-2 mt-auto"
+                >
+                  {skill.tags.map((tag, i) => (
+                    <span key={i} className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl ${skill.tagColor} transition-all`}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
