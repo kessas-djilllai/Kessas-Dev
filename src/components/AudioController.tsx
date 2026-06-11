@@ -58,6 +58,7 @@ export default function AudioController() {
       if (audio.src.includes('.m4a')) {
         // Fallback to mp3
         audio.src = '/music.mp3';
+        audio.load();
         setCustomAudioUrl('/music.mp3');
         customAudioUrlRef.current = '/music.mp3';
       }
@@ -66,28 +67,29 @@ export default function AudioController() {
     audio.addEventListener('error', handleError);
     
     // As soon as data is ready, try to play (browsers with autoplay allowed)
-    audio.addEventListener('canplay', attemptPlay, { once: true });
+    audio.addEventListener('canplay', attemptPlay);
     
     // Also try immediately
     attemptPlay();
 
     // Attach interaction listeners to broadly capture user gestures for unlocking audio
-    const events = ['click', 'touchstart', 'mousedown', 'pointerdown', 'keydown', 'scroll', 'touchend'];
+    const events = ['click', 'touchstart', 'touchend', 'mousedown', 'mouseup', 'pointerdown', 'pointerup', 'keydown', 'scroll', 'wheel'];
     const cleanupListeners = () => {
       events.forEach(evt => {
-        window.removeEventListener(evt, attemptPlay);
-        document.removeEventListener(evt, attemptPlay);
+        window.removeEventListener(evt, attemptPlay, true);
+        document.removeEventListener(evt, attemptPlay, true);
       });
     };
 
     events.forEach(evt => {
-      window.addEventListener(evt, attemptPlay, { passive: true });
-      document.addEventListener(evt, attemptPlay, { passive: true });
+      window.addEventListener(evt, attemptPlay, { capture: true, passive: true });
+      document.addEventListener(evt, attemptPlay, { capture: true, passive: true });
     });
 
     return () => {
       cleanupListeners();
       audio.removeEventListener('error', handleError);
+      audio.removeEventListener('canplay', attemptPlay);
       audio.pause();
     };
   }, []);
