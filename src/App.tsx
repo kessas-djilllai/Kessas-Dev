@@ -6,6 +6,7 @@ import Pricing from './components/Pricing';
 import Portfolio from './components/Portfolio';
 import Contact from './components/Contact';
 import ThreeDWorld from './components/ThreeDWorld';
+import AudioController from './components/AudioController';
 import { LanguageProvider } from './context/LanguageContext';
 
 function AppContent() {
@@ -54,6 +55,7 @@ function AppContent() {
         </main>
 
         <Contact />
+        <AudioController />
       </div>
     </div>
   );

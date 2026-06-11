@@ -3,30 +3,23 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Stars, PointMaterial, Float } from '@react-three/drei';
 import * as THREE from 'three';
 
-// 1. Hook to capture smooth continuous window scrolling progress (0.0 to 1.0)
-function useWindowScrollProgress() {
-  const [progress, setProgress] = useState(0);
+// 1. Single shared global scroll progress (0.0 to 1.0) with passive listeners for ultra scroll speed with 0fps React re-render overhead!
+let globalScrollProgress = 0;
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const docHeight = document.documentElement.scrollHeight;
-      const winHeight = window.innerHeight;
-      const scrollable = docHeight - winHeight;
-      if (scrollable <= 0) return;
-      
-      const currentScroll = window.scrollY;
-      const pct = Math.min(1, Math.max(0, currentScroll / scrollable));
-      setProgress(pct);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    // Initialize once
-    handleScroll();
+if (typeof window !== 'undefined') {
+  const handleScroll = () => {
+    const docHeight = document.documentElement.scrollHeight;
+    const winHeight = window.innerHeight;
+    const scrollable = docHeight - winHeight;
+    if (scrollable <= 0) return;
     
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    globalScrollProgress = Math.min(1, Math.max(0, window.scrollY / scrollable));
+  };
 
-  return progress;
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  window.addEventListener('resize', handleScroll, { passive: true });
+  // Initialize once
+  handleScroll();
 }
 
 // 1.5. Custom High-Fidelity Procedural Starfield with twinkle properties and color variances
@@ -158,7 +151,6 @@ function ModernPlanet() {
   const beaconsGroupRef = useRef<THREE.Group>(null);
   const orbitersGroupRef = useRef<THREE.Group>(null);
   
-  const scrollProgress = useWindowScrollProgress();
   const lastScroll = useRef(0);
   const scrollVelocity = useRef(0);
   const smoothedVelocity = useRef(0);
@@ -207,7 +199,7 @@ function ModernPlanet() {
     if (!planetGroupRef.current) return;
     
     // Smooth progress interpolation matching SectionGeometries
-    smoothedProgress.current = THREE.MathUtils.lerp(smoothedProgress.current, scrollProgress, 3 * delta);
+    smoothedProgress.current = THREE.MathUtils.lerp(smoothedProgress.current, globalScrollProgress, 3 * delta);
     const p = smoothedProgress.current;
 
     // Calculate correct distance and opacity based on smooth position
@@ -239,8 +231,8 @@ function ModernPlanet() {
     }
 
     // Calculate scroll delta
-    const deltaS = scrollProgress - lastScroll.current;
-    lastScroll.current = scrollProgress;
+    const deltaS = globalScrollProgress - lastScroll.current;
+    lastScroll.current = globalScrollProgress;
     
     // Convert to velocity (scroll speed per frame, scaled)
     const targetVel = deltaS / (delta || 0.016);
@@ -292,8 +284,8 @@ function ModernPlanet() {
   return (
     <group ref={planetGroupRef}>
       {/* 1. Core Sphere: Polished 3D Obsidian-metal tech globe with dynamic circuitry */}
-      <mesh ref={coreRef} castShadow receiveShadow>
-        <sphereGeometry args={[1.0, 64, 64]} />
+      <mesh ref={coreRef}>
+        <sphereGeometry args={[1.0, 32, 32]} />
         <meshStandardMaterial 
           map={techTexture || undefined}
           roughness={0.12} 
@@ -403,12 +395,11 @@ function ModernPlanet() {
 
 function SectionGeometries() {
   const planetRef = useRef<THREE.Group>(null);
-  const scrollProgress = useWindowScrollProgress();
   const currentProgress = useRef(0);
 
   useFrame((state, delta) => {
     // Smooth scroll interpolation
-    currentProgress.current = THREE.MathUtils.lerp(currentProgress.current, scrollProgress, 3 * delta);
+    currentProgress.current = THREE.MathUtils.lerp(currentProgress.current, globalScrollProgress, 3 * delta);
     const p = currentProgress.current;
 
     if (planetRef.current) {
@@ -484,7 +475,6 @@ function SectionGeometries() {
 // 3. Cyber Dust (Stars / Particles) that drifts and shifts with scrolling
 function CyberDust({ count = 300 }) {
   const pointsRef = useRef<THREE.Points>(null);
-  const scrollProgress = useWindowScrollProgress();
   const currentScrollY = useRef(0);
 
   const particles = useMemo(() => {
@@ -505,11 +495,11 @@ function CyberDust({ count = 300 }) {
 
     // Smoothly interpolate scroll height offset
     const prevScrollY = currentScrollY.current;
-    currentScrollY.current = THREE.MathUtils.lerp(currentScrollY.current, scrollProgress, 5 * delta);
+    currentScrollY.current = THREE.MathUtils.lerp(currentScrollY.current, globalScrollProgress, 5 * delta);
     pointsRef.current.position.y = currentScrollY.current * 10;
 
     // Calculate vertical scroll speed (differential)
-    const velocity = (scrollProgress - prevScrollY) / (delta || 0.016);
+    const velocity = (globalScrollProgress - prevScrollY) / (delta || 0.016);
     const absVel = Math.abs(velocity);
 
     // Apply hyperdrive dynamic warp stretching along Y-axis!
@@ -542,12 +532,11 @@ function CyberDust({ count = 300 }) {
 // 4. Smooth Camera rig following an elegant 3D flight path
 function CameraRig() {
   const { camera } = useThree();
-  const scrollProgress = useWindowScrollProgress();
   const currentProgress = useRef(0);
 
   useFrame((state, delta) => {
     // Smooth interpolator (lerper) on the scroll progress
-    currentProgress.current = THREE.MathUtils.lerp(currentProgress.current, scrollProgress, 4 * delta);
+    currentProgress.current = THREE.MathUtils.lerp(currentProgress.current, globalScrollProgress, 4 * delta);
     const p = currentProgress.current;
 
     // Camera 3D Bezier/Spline flight paths:
@@ -578,12 +567,11 @@ function CameraRig() {
 
 // 5. Realistic, Cinematic Deep Space Lights
 function DynamicLighting() {
-  const scrollProgress = useWindowScrollProgress();
   const lightRef = useRef<THREE.PointLight>(null);
 
   useFrame((state) => {
     if (!lightRef.current) return;
-    const p = scrollProgress;
+    const p = globalScrollProgress;
     
     // Soft hover follow inside R3F space
     const targetX = state.pointer.x * 4;

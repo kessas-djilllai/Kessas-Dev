@@ -50,3 +50,34 @@ html.dark body {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+/* Soundwave bar animations */
+@keyframes audio-bar-1 {
+  0%, 100% { transform: scaleY(0.45); }
+  50% { transform: scaleY(1.1); }
+}
+
+@keyframes audio-bar-2 {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1.35); }
+}
+
+@keyframes audio-bar-3 {
+  0%, 100% { transform: scaleY(0.55); }
+  50% { transform: scaleY(1.6); }
+}
+
+.animate-audio-bar-1 {
+  animation: audio-bar-1 1.2s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-audio-bar-2 {
+  animation: audio-bar-2 0.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-audio-bar-3 {
+  animation: audio-bar-3 1.0s ease-in-out infinite;
+  transform-origin: center;
+}
