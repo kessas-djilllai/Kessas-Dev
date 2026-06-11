@@ -14,6 +14,7 @@ export default function AudioController() {
   const [isUsingCustom, setIsUsingCustom] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const customAudioUrlRef = useRef<string | null>(null);
+  const audioCheckPromise = useRef<Promise<string | null> | null>(null);
 
   // Helper fallback function to switch to generative music if custom file fails
   const fallbackToSynth = () => {
@@ -27,63 +28,65 @@ export default function AudioController() {
     audio.loop = true;
     audioRef.current = audio;
 
-    const checkAndSetAudio = async () => {
-      // First, check for music.m4a as preferred by user
-      try {
-        const responseM4a = await fetch('/music.m4a', { method: 'HEAD' });
-        const contentTypeM4a = responseM4a.headers.get('content-type') || '';
-        const contentLengthM4a = responseM4a.headers.get('content-length');
+    const checkAndSetAudio = async (): Promise<string | null> => {
+      const checkFile = async (url: string): Promise<boolean> => {
+        try {
+          // Standard GET request is compatible with all CDNs (including Vercel / GitHub Pages)
+          const response = await fetch(url, { method: 'GET' });
+          if (!response.ok) return false;
 
-        // Verify it is not text/html (which happens on SPA fallback 404s) and not a 0-byte placeholder
-        if (responseM4a.ok && !contentTypeM4a.includes('text/html') && contentLengthM4a !== '0') {
-          setCustomAudioUrl('/music.m4a');
-          customAudioUrlRef.current = '/music.m4a';
-          setIsUsingCustom(true);
-          audio.src = '/music.m4a';
-          
-          // Try to play immediately on load (in case browser allows direct autoplay)
-          audio.play()
-            .then(() => {
-              setIsPlaying(true);
-              initialized.current = true;
-            })
-            .catch(() => {
-              // Normal behavior: browser blocked direct autoplay before gesture
-            });
-          return;
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('text/html')) {
+            // It's a 404 SPA fallback redirecting to index.html
+            return false;
+          }
+
+          const contentLength = response.headers.get('content-length');
+          if (contentLength === '0') {
+            return false;
+          }
+
+          return true;
+        } catch (e) {
+          console.warn(`File check exception for ${url}:`, e);
+          return false;
         }
-      } catch (e) {
-        console.warn("m4a not found or check failed:", e);
+      };
+
+      // 1. Try preferred music.m4a
+      const hasM4a = await checkFile('/music.m4a');
+      if (hasM4a) {
+        return '/music.m4a';
       }
 
-      // Second, try falling back to music.mp3
-      try {
-        const responseMp3 = await fetch('/music.mp3', { method: 'HEAD' });
-        const contentTypeMp3 = responseMp3.headers.get('content-type') || '';
-        const contentLengthMp3 = responseMp3.headers.get('content-length');
-        if (responseMp3.ok && !contentTypeMp3.includes('text/html') && contentLengthMp3 !== '0') {
-          setCustomAudioUrl('/music.mp3');
-          customAudioUrlRef.current = '/music.mp3';
-          setIsUsingCustom(true);
-          audio.src = '/music.mp3';
-          
-          // Try to play immediately on load
-          audio.play()
-            .then(() => {
-              setIsPlaying(true);
-              initialized.current = true;
-            })
-            .catch(() => {
-              // Normal: autoplay blocked
-            });
-          return;
-        }
-      } catch (e) {
-        console.warn("mp3 not found or check failed:", e);
+      // 2. Try fallback music.mp3
+      const hasMp3 = await checkFile('/music.mp3');
+      if (hasMp3) {
+        return '/music.mp3';
       }
+
+      return null;
     };
 
-    checkAndSetAudio();
+    audioCheckPromise.current = checkAndSetAudio().then((url) => {
+      if (url) {
+        setCustomAudioUrl(url);
+        customAudioUrlRef.current = url;
+        setIsUsingCustom(true);
+        audio.src = url;
+
+        // Try playing immediately if browser permissions allow direct autoplay
+        audio.play()
+          .then(() => {
+            setIsPlaying(true);
+            initialized.current = true;
+          })
+          .catch(() => {
+            // Blocked by browser browser security - normal behavior
+          });
+      }
+      return url;
+    });
 
     return () => {
       audio.pause();
@@ -110,12 +113,21 @@ export default function AudioController() {
 
   // Auto-play as soon as possible on any first interaction (clicks, scrolls, physical keys, touch)
   useEffect(() => {
-    const startAudioOnInteraction = () => {
+    const startAudioOnInteraction = async () => {
       if (initialized.current) return;
+
+      // Yield event loop to ensure any pending audio check resolves, preventing race conditions
+      let activeUrl: string | null = null;
+      if (audioCheckPromise.current) {
+        activeUrl = await audioCheckPromise.current;
+      } else {
+        activeUrl = customAudioUrl || customAudioUrlRef.current;
+      }
+
+      if (initialized.current) return; // safeguard for concurrent triggers
       initialized.current = true;
       
-      const activeUrl = customAudioUrl || customAudioUrlRef.current;
-      if ((isUsingCustom || activeUrl) && audioRef.current && activeUrl) {
+      if (activeUrl && audioRef.current) {
         if (!audioRef.current.src || !audioRef.current.src.includes(activeUrl)) {
           audioRef.current.src = activeUrl;
         }
@@ -125,11 +137,10 @@ export default function AudioController() {
           })
           .catch(err => {
             console.warn("Could not autoplay integrated music:", err);
-            // Dynamic fallback on any play errors (like empty or unreadable file formats)
             fallbackToSynth();
           });
       } else {
-        // Fallback to the beautiful custom synthesizer
+        // Fallback to the beautiful space synthesizer
         ambientSynth.start();
         setIsPlaying(true);
       }
