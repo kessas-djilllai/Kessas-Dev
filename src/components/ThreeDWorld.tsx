@@ -29,404 +29,148 @@ function useWindowScrollProgress() {
   return progress;
 }
 
-// 2. Beautiful floating geometric meshes (skills, tech tokens) scattered in 3D
-function FloatingGeometries() {
-  const groupRef = useRef<THREE.Group>(null);
-
-  // Spread 20 high-fidelity futuristic coding items along the scroll descent path
-  const elements = useMemo(() => {
-    const items = [];
-    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#6366f1'];
-    
-    for (let i = 0; i < 20; i++) {
-      const angle = (i / 20) * Math.PI * 4; // spiral shape down
-      const radius = 2.4 + Math.random() * 2.4;
-      
-      const x = Math.cos(angle) * radius;
-      const y = 3 - (i * 1.5) + (Math.random() - 0.5) * 1.0; // gradual descent in y-space
-      const z = Math.sin(angle) * radius - 1.2;
-
-      const type = Math.floor(Math.random() * 6); // 6 distinctive programmer symbols
-      const size = 0.55 + Math.random() * 0.45; // larger modern dimensions for clear visual visibility
-      const rotationSpeed = 0.25 + Math.random() * 0.65; // slightly slower for professional premium elegance
-      const color = colors[i % colors.length];
-
-      items.push({ x, y, z, type, size, rotationSpeed, color });
-    }
-    return items;
-  }, []);
+// 2. Beautiful organized premium installations (Large, high-fidelity, perfectly structured)
+function SaturnPlanet() {
+  const planetRef = useRef<THREE.Group>(null);
 
   useFrame((state, delta) => {
-    if (!groupRef.current) return;
-    
-    // Rotate entire cluster system gently
-    groupRef.current.rotation.y += 0.02 * delta;
-
-    // Orbit/rotate individual pieces
-    const children = groupRef.current.children;
-    elements.forEach((elem, idx) => {
-      if (children[idx]) {
-        children[idx].rotation.x += 0.2 * delta * elem.rotationSpeed;
-        children[idx].rotation.y += 0.25 * delta * elem.rotationSpeed;
-        
-        // Gentle vertical hovering
-        children[idx].position.y = elem.y + Math.sin(state.clock.elapsedTime * 0.6 + idx) * 0.14;
-      }
-    });
+    if (!planetRef.current) return;
+    // Elegant slow orbital rotation
+    planetRef.current.rotation.y += 0.08 * delta;
+    planetRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.1) * 0.05;
   });
 
   return (
-    <group ref={groupRef}>
-      {elements.map((elem, i) => (
-        <group key={i} position={[elem.x, elem.y, elem.z]}>
-          {/* TYPE 0: Binary "1" Digit */}
-          {elem.type === 0 && (
-            <group>
-              {/* Outer holographic glowing shell (wired/transparent) */}
-              <mesh scale={[1.22, 1.12, 1.22]}>
-                <boxGeometry args={[elem.size * 0.25, elem.size * 1.05, elem.size * 0.25]} />
-                <meshStandardMaterial
-                  color={elem.color}
-                  wireframe
-                  transparent
-                  opacity={0.3}
-                />
-              </mesh>
-              {/* Core Solid Monolith Stem */}
-              <mesh>
-                <boxGeometry args={[elem.size * 0.16, elem.size * 1.0, elem.size * 0.16]} />
-                <meshStandardMaterial
-                  color={elem.color}
-                  transparent
-                  opacity={0.8}
-                  metalness={0.9}
-                  roughness={0.14}
-                  emissive={elem.color}
-                  emissiveIntensity={0.2}
-                />
-              </mesh>
-              {/* Slanted code bracket/tick hook */}
-              <mesh position={[-elem.size * 0.18, elem.size * 0.38, 0]} rotation={[0, 0, 0.6]}>
-                <boxGeometry args={[elem.size * 0.14, elem.size * 0.42, elem.size * 0.14]} />
-                <meshStandardMaterial
-                  color={elem.color}
-                  transparent
-                  opacity={0.8}
-                  metalness={0.9}
-                  roughness={0.12}
-                />
-              </mesh>
-              {/* Base terminal board */}
-              <mesh position={[0, -elem.size * 0.48, 0]}>
-                <boxGeometry args={[elem.size * 0.55, elem.size * 0.12, elem.size * 0.25]} />
-                <meshStandardMaterial
-                  color={elem.color}
-                  transparent
-                  opacity={0.75}
-                  metalness={0.95}
-                  roughness={0.16}
-                />
-              </mesh>
-              {/* Twin glowing logic nodes on the base */}
-              <mesh position={[elem.size * 0.18, -elem.size * 0.48, elem.size * 0.15]}>
-                <sphereGeometry args={[elem.size * 0.05, 8, 8]} />
-                <meshBasicMaterial color="#ffffff" />
-              </mesh>
-              <mesh position={[-elem.size * 0.18, -elem.size * 0.48, elem.size * 0.15]}>
-                <sphereGeometry args={[elem.size * 0.05, 8, 8]} />
-                <meshBasicMaterial color={elem.color} />
-              </mesh>
-            </group>
-          )}
+    <group ref={planetRef} position={[2.1, -1.9, -1.8]} rotation={[0.45, -0.2, -0.4]}>
+      {/* 1. Main Planet Sphere - High poly segment count for maximum smoothness */}
+      <mesh castShadow receiveShadow>
+        <sphereGeometry args={[1.5, 64, 64]} />
+        <meshStandardMaterial
+          color="#221c1a"
+          roughness={0.45}
+          metalness={0.7}
+          bumpScale={0.05}
+        />
+      </mesh>
 
-          {/* TYPE 1: Binary "0" Digit (Layered concentric loop with floating nucleus) */}
-          {elem.type === 1 && (
-            <group>
-              {/* Outer cyber loop casing */}
-              <mesh>
-                <torusGeometry args={[elem.size * 0.48, elem.size * 0.14, 8, 24]} />
-                <meshStandardMaterial
-                  color={elem.color}
-                  transparent
-                  opacity={0.7}
-                  metalness={0.95}
-                  roughness={0.1}
-                />
-              </mesh>
-              {/* Concentric wireframe halo sphere */}
-              <mesh scale={[0.85, 0.85, 0.85]}>
-                <torusGeometry args={[elem.size * 0.48, elem.size * 0.03, 4, 16]} />
-                <meshStandardMaterial
-                  color={elem.color}
-                  wireframe
-                  transparent
-                  opacity={0.4}
-                />
-              </mesh>
-              {/* Floating inner nucleus (Glowing core data block) */}
-              <mesh>
-                <icosahedronGeometry args={[elem.size * 0.18, 0]} />
-                <meshStandardMaterial
-                  color="#ffffff"
-                  emissive={elem.color}
-                  emissiveIntensity={1.2}
-                  transparent
-                  opacity={0.9}
-                />
-              </mesh>
-            </group>
-          )}
+      {/* 2. Saturn Outer Rings - Double-sided high quality Ring */}
+      <mesh rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
+        <ringGeometry args={[1.9, 3.4, 128]} />
+        <meshStandardMaterial
+          color="#f3ebd9"
+          emissive="#d4af37"
+          emissiveIntensity={0.2}
+          transparent
+          opacity={0.88}
+          side={THREE.DoubleSide}
+          roughness={0.15}
+          metalness={0.8}
+        />
+      </mesh>
 
-          {/* TYPE 2: Coding Code Bracket Angle Tag "<" / ">" with embedded glow logic */}
-          {elem.type === 2 && (
-            <group rotation={[0, 0, Math.random() > 0.5 ? 0 : Math.PI]}>
-              {/* Outer safety shell bracket */}
-              <group scale={[1.15, 1.15, 1.15]}>
-                <mesh position={[0, elem.size * 0.22, 0]} rotation={[0, 0, 0.75]}>
-                  <boxGeometry args={[elem.size * 0.8, elem.size * 0.06, elem.size * 0.06]} />
-                  <meshStandardMaterial color={elem.color} wireframe transparent opacity={0.3} />
-                </mesh>
-                <mesh position={[0, -elem.size * 0.22, 0]} rotation={[0, 0, -0.75]}>
-                  <boxGeometry args={[elem.size * 0.8, elem.size * 0.06, elem.size * 0.06]} />
-                  <meshStandardMaterial color={elem.color} wireframe transparent opacity={0.3} />
-                </mesh>
-              </group>
-              
-              {/* Main solid polished bracket arm 1 */}
-              <mesh position={[0, elem.size * 0.22, 0]} rotation={[0, 0, 0.75]}>
-                <boxGeometry args={[elem.size * 0.78, elem.size * 0.13, elem.size * 0.15]} />
-                <meshStandardMaterial
-                  color={elem.color}
-                  transparent
-                  opacity={0.8}
-                  metalness={0.9}
-                  roughness={0.15}
-                  emissive={elem.color}
-                  emissiveIntensity={0.2}
-                />
-              </mesh>
-              {/* Main solid polished bracket arm 2 */}
-              <mesh position={[0, -elem.size * 0.22, 0]} rotation={[0, 0, -0.75]}>
-                <boxGeometry args={[elem.size * 0.78, elem.size * 0.13, elem.size * 0.15]} />
-                <meshStandardMaterial
-                  color={elem.color}
-                  transparent
-                  opacity={0.8}
-                  metalness={0.9}
-                  roughness={0.15}
-                  emissive={elem.color}
-                  emissiveIntensity={0.2}
-                />
-              </mesh>
-              {/* Glowing code index focal vertex tip */}
-              <mesh position={[-elem.size * 0.27, 0, 0]}>
-                <sphereGeometry args={[elem.size * 0.1, 12, 12]} />
-                <meshBasicMaterial color="#ffffff" />
-              </mesh>
-            </group>
-          )}
+      {/* 3. Outer Thin Decorative Cyber Ring */}
+      <mesh rotation={[Math.PI / 2 + 0.1, 0.1, 0]}>
+        <torusGeometry args={[3.6, 0.03, 16, 100]} />
+        <meshStandardMaterial
+          color="#818cf8"
+          emissive="#4f46e5"
+          emissiveIntensity={1.5}
+          transparent
+          opacity={0.6}
+        />
+      </mesh>
 
-          {/* TYPE 3: Server Database Stack Cylinders */}
-          {elem.type === 3 && (
-            <group>
-              {/* Backing mainframe vertical mounting rod */}
-              <mesh position={[-elem.size * 0.35, 0, 0]}>
-                <boxGeometry args={[elem.size * 0.08, elem.size * 1.0, elem.size * 0.08]} />
-                <meshStandardMaterial color="#ffffff" metalness={0.95} roughness={0.1} opacity={0.8} transparent />
-              </mesh>
+      {/* 4. Tiny Red Neon Beacon Dot (Matches the red flare near the planet ring on screenshot) */}
+      <mesh position={[0.7, -1.3, 0.45]}>
+        <sphereGeometry args={[0.07, 16, 16]} />
+        <meshBasicMaterial color="#ef4444" />
+      </mesh>
+    </group>
+  );
+}
 
-              {/* Server Nodes Stacks */}
-              {[-0.32, 0, 0.32].map((yOffset, clusterIdx) => (
-                <group key={clusterIdx} position={[0, elem.size * yOffset, 0]}>
-                  {/* Detailed plate disk */}
-                  <mesh>
-                    <cylinderGeometry args={[elem.size * 0.44, elem.size * 0.44, elem.size * 0.18, 16]} />
-                    <meshStandardMaterial
-                      color={elem.color}
-                      transparent
-                      opacity={0.8}
-                      metalness={0.95}
-                      roughness={0.12}
-                    />
-                  </mesh>
-                  {/* Outer protective cage / framing ring */}
-                  <mesh scale={[1.1, 1.05, 1.1]}>
-                    <cylinderGeometry args={[elem.size * 0.44, elem.size * 0.44, elem.size * 0.19, 16, 1, true]} />
-                    <meshStandardMaterial
-                      color="#ffffff"
-                      wireframe
-                      transparent
-                      opacity={0.3}
-                    />
-                  </mesh>
-                  {/* Glowing core band loop */}
-                  <mesh scale={[1.02, 0.4, 1.02]}>
-                    <cylinderGeometry args={[elem.size * 0.44, elem.size * 0.44, elem.size * 0.18, 16]} />
-                    <meshStandardMaterial
-                      color="#ffffff"
-                      emissive={elem.color}
-                      emissiveIntensity={1.5}
-                      transparent
-                      opacity={0.9}
-                    />
-                  </mesh>
-                  {/* LEDs (dual interactive indicators) */}
-                  <mesh position={[elem.size * 0.18, 0, elem.size * 0.4]}>
-                    <boxGeometry args={[elem.size * 0.08, elem.size * 0.05, elem.size * 0.05]} />
-                    <meshBasicMaterial color={clusterIdx % 2 === 0 ? "#10b981" : "#3b82f6"} />
-                  </mesh>
-                  <mesh position={[elem.size * 0.28, 0, elem.size * 0.34]}>
-                    <boxGeometry args={[elem.size * 0.08, elem.size * 0.05, elem.size * 0.05]} />
-                    <meshBasicMaterial color={clusterIdx % 2 !== 0 ? "#f59e0b" : "#10b981"} />
-                  </mesh>
-                </group>
-              ))}
-            </group>
-          )}
+function SectionGeometries() {
+  const crystalRef = useRef<THREE.Group>(null);
+  const knotRef = useRef<THREE.Group>(null);
 
-          {/* TYPE 4: Algorithm Tree/Network Nodes (linked node neural architecture) */}
-          {elem.type === 4 && (
-            <group>
-              {/* Outer structural constellation sphere loop */}
-              <mesh>
-                <sphereGeometry args={[elem.size * 0.65, 8, 8]} />
-                <meshStandardMaterial color={elem.color} wireframe transparent opacity={0.2} />
-              </mesh>
+  useFrame((state, delta) => {
+    if (crystalRef.current) {
+      crystalRef.current.rotation.y += 0.25 * delta;
+      crystalRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.4) * 0.15;
+      crystalRef.current.position.y = -6.8 + Math.sin(state.clock.elapsedTime * 0.8) * 0.18;
+    }
+    if (knotRef.current) {
+      knotRef.current.rotation.y += 0.18 * delta;
+      knotRef.current.rotation.z += 0.15 * delta;
+      knotRef.current.position.y = -13.0 + Math.cos(state.clock.elapsedTime * 0.6) * 0.15;
+    }
+  });
 
-              {/* Central Primary Root Core block */}
-              <mesh position={[0, 0, 0]}>
-                <sphereGeometry args={[elem.size * 0.24, 16, 16]} />
-                <meshStandardMaterial
-                  color="#ffffff"
-                  emissive={elem.color}
-                  emissiveIntensity={0.5}
-                  transparent
-                  opacity={0.95}
-                  metalness={0.8}
-                  roughness={0.1}
-                />
-              </mesh>
+  return (
+    <group>
+      {/* Hero Planet */}
+      <SaturnPlanet />
 
-              {/* Child node A */}
-              <mesh position={[elem.size * 0.5, elem.size * 0.4, -elem.size * 0.15]}>
-                <sphereGeometry args={[elem.size * 0.14, 12, 12]} />
-                <meshStandardMaterial color={elem.color} emissive={elem.color} emissiveIntensity={0.2} transparent opacity={0.85} />
-              </mesh>
-              {/* Link connector line A */}
-              <mesh position={[elem.size * 0.25, elem.size * 0.2, -elem.size * 0.07]} rotation={[0, 0.2, -0.65]}>
-                <cylinderGeometry args={[elem.size * 0.02, elem.size * 0.02, elem.size * 0.65, 6]} />
-                <meshBasicMaterial color={elem.color} transparent opacity={0.65} />
-              </mesh>
+      {/* Section 2: Large Futuristic Quantum Crystal Installation (Aligned left at y = -6.8) */}
+      <group ref={crystalRef} position={[-2.4, -6.8, -1.5]}>
+        {/* Core Octahedron Crystal */}
+        <mesh>
+          <octahedronGeometry args={[1.1, 0]} />
+          <meshStandardMaterial
+            color="#10b981"
+            transparent
+            opacity={0.88}
+            metalness={0.95}
+            roughness={0.08}
+            emissive="#10b981"
+            emissiveIntensity={0.25}
+          />
+        </mesh>
+        {/* Thin outer orbital ring */}
+        <mesh rotation={[1.1, 0.4, 0]}>
+          <torusGeometry args={[1.5, 0.04, 16, 64]} />
+          <meshStandardMaterial
+            color="#34d399"
+            emissive="#059669"
+            emissiveIntensity={0.8}
+          />
+        </mesh>
+        {/* Secondary outer horizontal ring */}
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[1.8, 0.02, 8, 48]} />
+          <meshStandardMaterial
+            color="#6ee7b7"
+            transparent
+            opacity={0.4}
+          />
+        </mesh>
+      </group>
 
-              {/* Child node B */}
-              <mesh position={[-elem.size * 0.5, -elem.size * 0.4, elem.size * 0.15]}>
-                <sphereGeometry args={[elem.size * 0.14, 12, 12]} />
-                <meshStandardMaterial color={elem.color} emissive={elem.color} emissiveIntensity={0.2} transparent opacity={0.85} />
-              </mesh>
-              {/* Link connector line B */}
-              <mesh position={[-elem.size * 0.25, -elem.size * 0.2, elem.size * 0.07]} rotation={[0, 0.2, -0.65]}>
-                <cylinderGeometry args={[elem.size * 0.02, elem.size * 0.02, elem.size * 0.65, 6]} />
-                <meshBasicMaterial color={elem.color} transparent opacity={0.65} />
-              </mesh>
-
-              {/* Child node C */}
-              <mesh position={[-elem.size * 0.4, elem.size * 0.45, -elem.size * 0.2]}>
-                <sphereGeometry args={[elem.size * 0.14, 12, 12]} />
-                <meshStandardMaterial color={elem.color} emissive={elem.color} emissiveIntensity={0.2} transparent opacity={0.85} />
-              </mesh>
-              {/* Link connector line C */}
-              <mesh position={[-elem.size * 0.2, elem.size * 0.22, -elem.size * 0.1]} rotation={[0, -0.4, 0.65]}>
-                <cylinderGeometry args={[elem.size * 0.02, elem.size * 0.02, elem.size * 0.62, 6]} />
-                <meshBasicMaterial color={elem.color} transparent opacity={0.65} />
-              </mesh>
-            </group>
-          )}
-
-          {/* TYPE 5: Silicon Microchip CPU Processor */}
-          {elem.type === 5 && (
-            <group>
-              {/* Solid Base Board Plate */}
-              <mesh>
-                <boxGeometry args={[elem.size * 0.85, elem.size * 0.85, elem.size * 0.12]} />
-                <meshStandardMaterial
-                  color={elem.color}
-                  transparent
-                  opacity={0.8}
-                  metalness={0.9}
-                  roughness={0.15}
-                  emissive={elem.color}
-                  emissiveIntensity={0.1}
-                />
-              </mesh>
-
-              {/* Outer Micro-Track wire grid frame */}
-              <mesh scale={[1.15, 1.15, 1]}>
-                <boxGeometry args={[elem.size * 0.85, elem.size * 0.85, elem.size * 0.04]} />
-                <meshStandardMaterial
-                  color={elem.color}
-                  wireframe
-                  transparent
-                  opacity={0.35}
-                />
-              </mesh>
-              
-              {/* Highly Glossy Floating Silicon Die Crystal Processor */}
-              <mesh position={[0, 0, elem.size * 0.08]}>
-                <boxGeometry args={[elem.size * 0.42, elem.size * 0.42, elem.size * 0.06]} />
-                <meshStandardMaterial
-                  color="#ffffff"
-                  emissive={elem.color}
-                  emissiveIntensity={1.3}
-                  transparent
-                  opacity={0.9}
-                  metalness={0.98}
-                  roughness={0.05}
-                />
-              </mesh>
-
-              {/* Glowing corner transistor logic points */}
-              {[-0.28, 0.28].map((cx, xIndex) => 
-                [-0.28, 0.28].map((cy, yIndex) => (
-                  <mesh key={`${cx}-${xIndex}-${cy}-${yIndex}`} position={[cx * elem.size, cy * elem.size, elem.size * 0.065]}>
-                    <boxGeometry args={[elem.size * 0.1, elem.size * 0.1, elem.size * 0.04]} />
-                    <meshStandardMaterial
-                      color="#ffffff"
-                      metalness={0.9}
-                      roughness={0.1}
-                    />
-                  </mesh>
-                ))
-              )}
-
-              {/* Silicon pins protruding from CPU sides */}
-              {[-0.25, 0, 0.25].map((pos, j) => (
-                <group key={pos}>
-                  {/* Left horizontal pin */}
-                  <mesh position={[-elem.size * 0.48, pos * elem.size, 0]}>
-                    <boxGeometry args={[elem.size * 0.14, elem.size * 0.05, elem.size * 0.05]} />
-                    <meshBasicMaterial color="#ffffff" transparent opacity={0.8} />
-                  </mesh>
-                  {/* Right horizontal pin */}
-                  <mesh position={[elem.size * 0.48, pos * elem.size, 0]}>
-                    <boxGeometry args={[elem.size * 0.14, elem.size * 0.05, elem.size * 0.05]} />
-                    <meshBasicMaterial color="#ffffff" transparent opacity={0.8} />
-                  </mesh>
-                  {/* Top vertical pin */}
-                  <mesh position={[pos * elem.size, elem.size * 0.48, 0]} rotation={[0, 0, 1.57]}>
-                    <boxGeometry args={[elem.size * 0.14, elem.size * 0.05, elem.size * 0.05]} />
-                    <meshBasicMaterial color="#ffffff" transparent opacity={0.8} />
-                  </mesh>
-                  {/* Bottom vertical pin */}
-                  <mesh position={[pos * elem.size, -elem.size * 0.48, 0]} rotation={[0, 0, 1.57]}>
-                    <boxGeometry args={[elem.size * 0.14, elem.size * 0.05, elem.size * 0.05]} />
-                    <meshBasicMaterial color="#ffffff" transparent opacity={0.8} />
-                  </mesh>
-                </group>
-              ))}
-            </group>
-          )}
-        </group>
-      ))}
+      {/* Section 3: Recursive Logic Loop (Large Torus Knot, Aligned right at y = -13.0) */}
+      <group ref={knotRef} position={[2.5, -13.0, -1.8]}>
+        <mesh>
+          <torusKnotGeometry args={[0.9, 0.26, 128, 16, 3, 4]} />
+          <meshStandardMaterial
+            color="#6366f1"
+            transparent
+            opacity={0.9}
+            metalness={0.9}
+            roughness={0.12}
+            emissive="#4f46e5"
+            emissiveIntensity={0.3}
+          />
+        </mesh>
+        {/* Glowing holographic cloud dust cage */}
+        <mesh scale={[1.3, 1.3, 1.3]}>
+          <sphereGeometry args={[1.2, 16, 16]} />
+          <meshStandardMaterial
+            color="#818cf8"
+            wireframe
+            transparent
+            opacity={0.15}
+          />
+        </mesh>
+      </group>
     </group>
   );
 }
@@ -559,7 +303,7 @@ export default function ThreeDWorld() {
         <CameraRig />
         <DynamicLighting />
         <Stars radius={120} depth={40} count={2500} factor={5.5} speed={1.2} saturation={0.6} fade />
-        <FloatingGeometries />
+        <SectionGeometries />
         <CyberDust count={300} />
       </Canvas>
     </div>
