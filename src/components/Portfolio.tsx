@@ -17,21 +17,24 @@ export default function Portfolio() {
       desc: t('project1Desc'),
       icon: <FileText className="w-6 h-6 text-blue-500 animate-pulse" />,
       color: "from-blue-500/10 to-blue-500/5",
-      image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=800",
+      link: "http://bohothi.kesug.com"
     },
     {
       title: t('project2Title'),
       desc: t('project2Desc'),
       icon: <GraduationCap className="w-6 h-6 text-emerald-500" />,
       color: "from-emerald-500/10 to-emerald-500/5",
-      image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=800",
+      link: "https://bacaloria.vercel.app"
     },
     {
       title: t('project3Title'),
       desc: t('project3Desc'),
       icon: <ShoppingBag className="w-6 h-6 text-orange-500" />,
       color: "from-orange-500/10 to-orange-500/5",
-      image: "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&q=80&w=800",
+      link: "http://souqify.kesug.com"
     }
   ];
 
@@ -166,14 +169,18 @@ export default function Portfolio() {
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
                           referrerPolicy="no-referrer"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
-                          <button 
-                            className="bg-white text-slate-900 px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:bg-blue-50"
-                            style={{ transform: 'translateZ(50px)' }}
-                          >
-                            {t('viewProject')} <ExternalLink className="w-4 h-4" />
-                          </button>
-                        </div>
+                        <a 
+                          href={project.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute inset-0 z-10"
+                          aria-label={t('viewProject')}
+                          onClick={(e) => {
+                            if (!isActive) e.preventDefault();
+                          }}
+                        >
+                          <div className="absolute inset-0 bg-slate-900/10 dark:bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </a>
                       </div>
                       
                       {/* Layer 2: Icon and Text layout floats with translateZ(50px) */}
@@ -191,11 +198,31 @@ export default function Portfolio() {
                       
                       {/* Layer 3: Paragraph floating layout with translateZ(25px) */}
                       <p 
-                        className="text-slate-600 dark:text-slate-400 leading-relaxed text-base sm:text-lg flex-grow font-medium"
+                        className="text-slate-600 dark:text-slate-400 leading-relaxed text-base sm:text-lg mb-6 flex-grow font-medium"
                         style={{ transform: 'translateZ(25px)' }}
                       >
                         {project.desc}
                       </p>
+                      
+                      {/* Layer 4: Interactive View Project Button */}
+                      <div 
+                        className="mt-auto pt-2" 
+                        style={{ transform: 'translateZ(40px)' }}
+                      >
+                        <a 
+                          href={project.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group/btn relative flex items-center justify-center gap-3 w-full py-3.5 sm:py-4 px-6 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl font-bold text-base sm:text-lg overflow-hidden transition-all hover:scale-[1.02] active:scale-95 border border-slate-200 dark:border-slate-700 hover:border-transparent dark:hover:border-transparent shadow-sm"
+                          onClick={(e) => {
+                            if (!isActive) e.preventDefault();
+                          }}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
+                          <span className="relative z-10 group-hover/btn:text-white transition-colors duration-300">{t('viewProject')}</span>
+                          <ExternalLink className="relative z-10 w-5 h-5 group-hover/btn:text-white transition-all duration-300 group-hover/btn:-translate-y-0.5 group-hover/btn:translate-x-0.5" />
+                        </a>
+                      </div>
                     </div>
                   </Tilt3D>
                 </motion.div>

@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Mail, Github, Linkedin, Briefcase } from 'lucide-react';
+import { Mail, Facebook, Phone, Briefcase } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Contact() {
@@ -10,7 +10,7 @@ export default function Contact() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+  initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
@@ -30,43 +30,58 @@ export default function Contact() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={{
-              visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+              visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
               hidden: { opacity: 0 }
             }}
-            className="flex justify-center gap-6 mb-16"
+            className="flex flex-row justify-center items-center gap-6 sm:gap-8 mb-16 w-full px-4"
           >
             <motion.a 
               variants={{
                 visible: { opacity: 1, y: 0, scale: 1 },
-                hidden: { opacity: 0, y: 20, scale: 0.8 }
+                hidden: { opacity: 0, y: 30, scale: 0.8 }
               }}
-              href={`mailto:${"0696666164dj@gmail.com"}`} 
-              className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all group hover:-translate-y-1 shadow-lg"
+              whileHover={{ y: -5, scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              href="https://www.facebook.com/djillali.rezkii"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white dark:bg-slate-800 hover:bg-[#1877F2] dark:hover:bg-[#1877F2] border-2 border-slate-200 dark:border-slate-700 hover:border-[#1877F2] dark:hover:border-[#1877F2] transition-all duration-300 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-[#1877F2]/40"
+              aria-label="Facebook"
+            >
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out" />
+              <Facebook className="w-7 h-7 sm:w-8 sm:h-8 text-[#1877F2] group-hover:text-white transition-colors duration-300 z-10" />
+            </motion.a>
+
+            <motion.a 
+              variants={{
+                visible: { opacity: 1, y: 0, scale: 1 },
+                hidden: { opacity: 0, y: 30, scale: 0.8 }
+              }}
+              whileHover={{ y: -5, scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              href="https://wa.me/213658064184" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white dark:bg-slate-800 hover:bg-[#25D366] dark:hover:bg-[#25D366] border-2 border-slate-200 dark:border-slate-700 hover:border-[#25D366] dark:hover:border-[#25D366] transition-all duration-300 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-[#25D366]/40"
+              aria-label="WhatsApp"
+            >
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out" />
+              <Phone className="w-7 h-7 sm:w-8 sm:h-8 text-[#25D366] group-hover:text-white transition-colors duration-300 z-10" />
+            </motion.a>
+
+            <motion.a 
+              variants={{
+                visible: { opacity: 1, y: 0, scale: 1 },
+                hidden: { opacity: 0, y: 30, scale: 0.8 }
+              }}
+              whileHover={{ y: -5, scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              href="mailto:0696666164dj@gmail.com" 
+              className="group relative flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white dark:bg-slate-800 hover:bg-slate-900 dark:hover:bg-slate-100 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-900 dark:hover:border-slate-100 transition-all duration-300 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-slate-900/30 dark:hover:shadow-white/30"
               aria-label="Email"
             >
-              <Mail className="w-7 h-7 group-hover:scale-110 transition-transform" />
-            </motion.a>
-            <motion.a 
-              variants={{
-                visible: { opacity: 1, y: 0, scale: 1 },
-                hidden: { opacity: 0, y: 20, scale: 0.8 }
-              }}
-              href="#" 
-              className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all group hover:-translate-y-1 shadow-lg"
-              aria-label="GitHub"
-            >
-              <Github className="w-7 h-7 group-hover:scale-110 transition-transform" />
-            </motion.a>
-            <motion.a 
-              variants={{
-                visible: { opacity: 1, y: 0, scale: 1 },
-                hidden: { opacity: 0, y: 20, scale: 0.8 }
-              }}
-              href="#" 
-              className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all group hover:-translate-y-1 shadow-lg"
-              aria-label="LinkedIn"
-            >
-              <Linkedin className="w-7 h-7 group-hover:scale-110 transition-transform" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 dark:via-black/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out" />
+              <Mail className="w-7 h-7 sm:w-8 sm:h-8 text-slate-800 dark:text-white group-hover:text-white dark:group-hover:text-slate-900 transition-colors duration-300 z-10" />
             </motion.a>
           </motion.div>
           
