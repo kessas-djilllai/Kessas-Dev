@@ -5,11 +5,14 @@ import { useRef, useState, useEffect } from 'react';
 import Tilt3D from './Tilt3D';
 
 export default function Portfolio() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(1);
   const [dragOffset, setDragOffset] = useState(0);
   const [containerWidth, setContainerWidth] = useState(800);
+
+  const isRtl = language === 'ar';
+  const dirMult = isRtl ? -1 : 1;
 
   const projects = [
     {
@@ -89,18 +92,18 @@ export default function Portfolio() {
             onDrag={(event, info) => {
               const speedFactor = isMobile ? 280 : 420;
               const dragProgress = info.offset.x / speedFactor;
-              setDragOffset(-dragProgress);
+              setDragOffset(-dragProgress * dirMult);
             }}
             onDragEnd={(event, info) => {
               const speedFactor = isMobile ? 280 : 420;
               const dragProgress = info.offset.x / speedFactor;
-              const roundedChange = Math.round(-dragProgress);
+              const roundedChange = Math.round(-dragProgress * dirMult);
               const targetIndex = activeIndex + roundedChange;
               const nextIndex = Math.max(0, Math.min(projects.length - 1, targetIndex));
               setActiveIndex(nextIndex);
               setDragOffset(0);
             }}
-            className="relative w-full h-[380px] sm:h-[460px] overflow-visible flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
+            className="relative w-full h-[460px] sm:h-[540px] overflow-visible flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
             style={{ 
               perspective: '1200px', 
               transformStyle: 'preserve-3d' 
@@ -114,10 +117,10 @@ export default function Portfolio() {
               const theta = offset * (30 * Math.PI / 180); // angle in radians (converge inward at 30 deg intervals)
               const radius = isMobile ? 320 : 560; // radius of the spherical virtual belt
               
-              const tx = Math.sin(theta) * radius;
+              const tx = Math.sin(theta) * radius * dirMult;
               const tz = (Math.cos(theta) - 1) * radius;
-              const ry = offset * -30; // Rotate in inverse Y direction so cards always turn facing the viewer
-              const rz = offset * -3;  // Minor Z tangent tilt for a dynamic spherical globe aesthetic
+              const ry = offset * -30 * dirMult; // Rotate in inverse Y direction so cards always turn facing the viewer
+              const rz = offset * -3 * dirMult;  // Minor Z tangent tilt for a dynamic spherical globe aesthetic
               const scale = 1 - Math.pow(Math.abs(offset), 2) * 0.06;
               const opacity = Math.max(0.15, 1 - Math.abs(offset) * 0.55);
               const blurVal = Math.abs(offset) < 0.1 ? 0 : Math.min(2.5, Math.abs(offset) * 1.5);
@@ -231,7 +234,7 @@ export default function Portfolio() {
           </motion.div>
           
           {/* Active Navigation Dot Selectors */}
-          <div className="flex justify-center gap-2.5 mt-8 z-20 relative">
+          <div className="flex justify-center gap-3 mt-12 sm:mt-16 z-20 relative">
             {projects.map((_, i) => {
               const currentVisualIndex = Math.max(0, Math.min(projects.length - 1, Math.round(activeIndex + dragOffset)));
               const isActive = currentVisualIndex === i;
